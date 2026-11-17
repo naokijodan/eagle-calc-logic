@@ -1,0 +1,2073 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>出品価格・ポリシー計算の見本ツール</title>
+<style>
+:root{--ink:#3a3245;--ink-soft:#6b6377;--cream:#fff9f0;--card:#fff;--line:#e9e0d4;--peach:#ff8a65;--mint:#1fb88a;--sky:#3f95ee;--grape:#8a5cf0;--sun:#ffc94d;--pink:#ff6fa5;--code-bg:#f4efe7;--code-ink:#2d2838}
+*{box-sizing:border-box;margin:0;padding:0}
+html{color-scheme:light}
+body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Maru Gothic ProN","Yu Gothic",Meiryo,sans-serif;color:var(--ink);background:var(--cream);line-height:1.75;overflow-wrap:anywhere;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+header.top{padding:30px 0 16px;text-align:center}
+.eyebrow{display:inline-block;font-size:13px;font-weight:800;color:#fff;padding:6px 16px;border-radius:999px;background:linear-gradient(90deg,#f0663d,#e0407e);margin-bottom:12px}
+h1{font-size:clamp(22px,4vw,34px);font-weight:900;line-height:1.4;margin-bottom:10px}
+h1 .hl{background:linear-gradient(transparent 62%,rgba(255,201,77,.65) 62%);padding:0 4px}
+.lead{max-width:760px;margin:0 auto;background:#fff;border-radius:16px;padding:12px 20px;color:var(--ink-soft);font-size:15px;text-align:left}
+.lead ol{padding-left:1.4em}
+.steps3{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0 6px}
+.steps3 span{background:#fff;border:2px solid var(--line);border-radius:999px;padding:4px 14px;font-size:14px;font-weight:700}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 14px;position:sticky;top:0;background:var(--cream);padding:8px 0;z-index:5}
+.tabs button{font:inherit;font-weight:800;font-size:14.5px;padding:8px 14px;border-radius:12px;border:2px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+.tabs button.on{background:linear-gradient(90deg,#f0663d,#e0407e);color:#fff;border-color:transparent}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:18px 20px 22px;margin-bottom:30px;box-shadow:0 8px 22px rgba(160,140,120,.12)}
+.panel h2{font-size:21px;font-weight:900;margin-bottom:6px}
+.panel h3{font-size:17px;font-weight:800;margin:20px 0 6px}
+.panel h4{font-size:15.5px;font-weight:800;margin:16px 0 6px}
+p{margin:0 0 10px}
+.muted{color:var(--ink-soft);font-size:13.5px}
+.sub{color:var(--ink-soft);font-size:12px;font-weight:400}
+code,.mono,.num{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+code{background:var(--code-bg);color:var(--code-ink);padding:1px 5px;border-radius:5px;font-size:.92em}
+.num{white-space:nowrap}
+.strong{font-weight:800}
+.nowrap{white-space:nowrap}
+textarea{width:100%;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;border:2px solid var(--line);border-radius:12px;padding:8px 10px;background:#fffdf9;color:var(--ink);resize:vertical}
+input,select{font:inherit;font-size:14px;border:2px solid var(--line);border-radius:8px;padding:3px 6px;background:#fff;color:var(--ink);max-width:100%}
+input[type=checkbox]{width:auto}
+.btn{font:inherit;font-weight:800;font-size:14.5px;border:0;border-radius:999px;padding:8px 18px;cursor:pointer;background:linear-gradient(90deg,#f0663d,#e0407e);color:#fff;margin:2px 4px 2px 0}
+.btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line)}
+.mini{font:inherit;font-size:12px;padding:2px 8px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer}
+.chk{font-size:14px;margin-right:12px}
+.msg{border-radius:10px;padding:9px 14px;margin:8px 0;font-size:14.5px;border-left:6px solid var(--sky);background:#eaf4ff;color:#153a64}
+.msg.ok{border-left-color:var(--mint);background:#e6f8f1;color:#0d4d39}
+.msg.warn{border-left-color:var(--sun);background:#fff6dd;color:#4a3d12}
+.msg.err{border-left-color:var(--peach);background:#fff0ea;color:#6a2a12}
+.msg.note{border-left-color:var(--grape);background:#f1ebff;color:#33205f}
+.badge{display:inline-block;border-radius:999px;padding:1px 12px;font-weight:800;font-size:13.5px}
+.badge.err{background:#ffd9cc;color:#6a2a12}.badge.warn{background:#ffefb8;color:#4a3d12}
+.tbl-wrap{overflow-x:auto;margin:8px 0 14px;border-radius:12px;-webkit-overflow-scrolling:touch}
+.tbl-wrap table{border-collapse:collapse;min-width:100%;background:#fff;font-size:13.5px}
+.tbl-wrap th,.tbl-wrap td{border:1px solid var(--line);padding:5px 9px;text-align:left;vertical-align:top;line-height:1.55;overflow-wrap:normal;word-break:normal}
+.tbl-wrap th{background:#f6efe4;font-weight:800;white-space:nowrap}
+.tbl-wrap td.wide{min-width:18em;overflow-wrap:anywhere}
+table.edit input,table.edit select{font-size:13px;padding:2px 4px}
+table.edit select.bad{background:#ffe4dc}
+td.ro{background:#f4efe7}
+tr.row-err td{background:#fff3ee}tr.row-warn td{background:#fffaf0}
+tr.cause td{background:#fffdf9}
+tr.cause ul{padding-left:1.3em;margin:4px 0 2px}
+td.ng{background:#ffd9cc !important;font-weight:700}td.okc{background:#eefaf4}
+.stat{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.stat div{background:#fff;border:2px solid var(--line);border-radius:14px;padding:6px 18px;text-align:center}
+.stat b{display:block;font-size:22px}.stat span{font-size:12.5px;color:var(--ink-soft)}
+.stat .ok{background:#e6f8f1}.stat .ng{background:#ffd9cc}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid2>*{min-width:0}
+.box{border:2px dashed var(--line);border-radius:16px;padding:12px 16px;margin:12px 0}
+.mock{background:repeating-linear-gradient(45deg,#faf5ff,#faf5ff 10px,#f3ecff 10px,#f3ecff 20px);border:2px dashed var(--grape);border-radius:14px;padding:10px 14px;margin:8px 0;font-size:14px;color:#33205f}
+.field{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:6px 0}
+.field label{font-size:14px;font-weight:700;max-width:100%}
+.field input{min-width:0}
+#reHeads{width:min(100%,32em)}
+details{margin:8px 0}summary{cursor:pointer;font-weight:700}
+footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13px}
+@media (max-width:700px){.grid2{grid-template-columns:1fr}.panel{padding:14px 12px 18px}.wrap{padding:0 16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <span class="eyebrow">見本ツール（計算の確認用）</span>
+  <h1>出品価格・ポリシー計算の<span class="hl">見本ツール</span></h1>
+  <div class="lead"><ol>
+    <li>一括登録シート V5 の「タグ＋仕入れ値 → 出品価格・利益・想定関税・配送方法・シッピングポリシー・テンプレート」の計算を、画面で確かめるための見本です（出品管理ツールへ移す前の確認用）。</li>
+    <li>主な使い道は 2 つ。計算がシートの結果と合っているかを 1 件ずつ照合すること（(E)）と、タグ設定の一括登録の画面・入力の形を実物で見ること（(A)）です。</li>
+    <li>入力したデータはこのページの中だけで処理され、パソコンの外には出ません（通信しません）。</li>
+  </ol></div>
+  <div class="steps3"><span>① (A) タグ設定を貼る</span><span>→</span><span>② (B) 共通設定を合わせる</span><span>→</span><span>③ (C) 計算 または (E) 照合</span></div>
+</header>
+
+<div class="tabs" id="tabs">
+  <button class="on" data-tab="A">(A) タグ設定の一括登録</button>
+  <button data-tab="B">(B) 共通の設定</button>
+  <button data-tab="C">(C) 商品の計算</button>
+  <button data-tab="D">(D) ポリシーとテンプレート</button>
+  <button data-tab="E">(E) シートとの照合</button>
+</div>
+
+<!-- ===================== (A) ===================== -->
+<section class="panel" id="panel-A">
+  <h2>(A) タグ設定の一括登録</h2>
+  <p>「タグ」は、商品の種類ごとに送料・手数料率・利益率・配送方法・DDP/DDU などをまとめて決めておく名前です。シートの <code>TagShipping</code> シートを <b>A 列から T 列まで範囲コピー</b>して下に貼り付けます（タブ区切り。見出し行はあってもなくても構いません。列の並びは仕様書 3.3、取り込みの形式は 11 章）。CSV ファイルも読めます（ファイルは外部に送られません）。</p>
+  <p class="muted">用語: <b>DDU</b>＝関税を送料の欄で別に受け取る方式、<b>DDP</b>＝関税を価格に含める方式です（R 列の「DDP/DDU設定」で、タグごとに決めます）。</p>
+  <textarea id="tagPaste" rows="6" placeholder="例: ここに TagShipping の A〜T 列を貼り付け"></textarea>
+  <p>
+    <button class="btn" id="btnTagImport">取り込む（置き換え）</button>
+    <button class="btn ghost" id="btnTagAppend">取り込む（追加）</button>
+    <button class="btn ghost" id="btnTagSample">見本を読み込む</button>
+    <button class="btn ghost" id="btnTagClear">全部消す</button>
+    <label class="btn ghost" style="display:inline-block">CSV ファイルを読む<input type="file" id="tagFile" accept=".csv,.tsv,.txt,text/csv,text/plain" hidden></label>
+  </p>
+  <div id="tagImportMsg"></div>
+  <h3>入力チェック</h3>
+  <p class="muted">取り込み時と、表を直したときに毎回検査します。各行に根拠（仕様書の節）を付けています。<label class="chk"><input type="checkbox" id="onlyErr"> エラーだけ見る</label></p>
+  <div id="tagIssues"></div>
+  <h3>取り込んだタグ設定（1 行ずつ直せます）</h3>
+  <p class="muted">O 列（想定関税の閾値）はシートでは式で、H 列の「$ の後ろの数字」から作られます。ここでは自動表示で、直せません。</p>
+  <div id="tagTable"></div>
+  <p><button class="btn ghost" id="btnTagAdd">行を追加</button></p>
+  <h3>書き出し（シートに貼り戻せる並び）</h3>
+  <div class="field">
+    <label class="chk"><input type="checkbox" id="expHeader" checked> 見出し行を付ける</label>
+    <label>形式 <select id="expFmt"><option value="tsv">タブ区切り</option><option value="csv">CSV</option></select></label>
+    <label>O 列 <select id="expO"><option value="formula">式（2 行目から。シートの式のまま）</option><option value="value">値（計算結果の数字）</option></select></label>
+  </div>
+  <textarea id="tagOut" rows="6" readonly></textarea>
+  <p><button class="btn" id="btnTagCopy">コピー</button> <button class="btn ghost" id="btnTagDl">ファイルに保存</button></p>
+  <p class="muted">率は「18%」の文字で書き出します。シートの式は % を取って 100 で割る作りです。貼り戻したあと、シートのセルが数値（0.18）に変わると読み方が変わる可能性があり、実機では未確認です（仕様書 3.3・9.3）。</p>
+</section>
+
+<!-- ===================== (B) ===================== -->
+<section class="panel" id="panel-B" hidden>
+  <h2>(B) 共通の設定</h2>
+  <p>作業シートの 1〜3 行目の「設定セル」のうち、計算に使うものです（仕様書 3.2）。初期値は <code>calc-examples.js</code> の 8.1 の設定値（為替 150 など）です。率は「%」で入力します（シートのセルには 0.18 のような小数で入ります）。<b>VAT 率はアメリカ向けだけを対象にした設定です。</b></p>
+  <div id="settingsTable"></div>
+  <div id="settingsInfo"></div>
+  <h3>Profit_Amounts（利益額・固定送料の表）</h3>
+  <p class="muted">シートの Profit_Amounts シートの A〜D 列（仕入下限・仕入上限・利益額・送料）を貼り付けます。引き方は「仕入れ値以下で最大の A の行」（近似一致。B 列は使いません: 3.4）。</p>
+  <textarea id="pa" rows="6"></textarea>
+  <p><button class="btn" id="btnPaApply">この表を使う</button> <button class="btn ghost" id="btnPaReset">見本に戻す</button></p>
+  <div id="paMsg"></div>
+  <h3>設定の書き出し・読み込み（JSON）</h3>
+  <p><button class="btn" id="btnSetDl">JSON を保存</button> <button class="btn ghost" id="btnSetCopy">JSON をコピー</button> <button class="btn ghost" id="btnSetReset">初期値に戻す</button>
+  <label class="btn ghost" style="display:inline-block">JSON ファイルを読む<input type="file" id="setFile" accept=".json,application/json" hidden></label></p>
+  <textarea id="setPaste" rows="3" placeholder="JSON を貼り付けて「貼り付けた JSON を読む」"></textarea>
+  <p><button class="btn ghost" id="btnSetLoad">貼り付けた JSON を読む</button></p>
+  <div id="settingsMsg"></div>
+</section>
+
+<!-- ===================== (C) ===================== -->
+<section class="panel" id="panel-C" hidden>
+  <h2>(C) 商品の計算</h2>
+  <div class="field"><label>SKU の日付 <input type="date" id="skuDate"></label><span class="muted">SKU は「略称（小文字）＋年月日＋3 桁連番」（4.16）。連番は日付・略称ごとに 001 から数えます。</span></div>
+  <datalist id="tagList"></datalist>
+
+  <h3>パターン1　仕入れ先と仕入れ価格（とタグ）だけ入れる</h3>
+  <div class="mock"><b>ここで翻訳・カテゴリ判定・タグ判定が入ります（この見本では未実装）。</b> 本番では、仕入先・仕入先コード・仕入れ価格を入れると、ツールが title・説明・Item Specifics・カテゴリ・タグ判定（翻訳＝AI の処理）をしたうえで、下の価格計算に渡します。この見本は外部と通信しないので、タグは手で入れてください。</div>
+  <div class="field">
+    <label>仕入先 <input id="s1Sup" size="12" placeholder="例: 任意（空でも可）"></label>
+    <label>仕入先コード <input id="s1Code" size="14" placeholder="例: 任意"></label>
+    <label>タグ <input id="s1Tag" list="tagList" size="16" placeholder="例: サンプルA"></label>
+    <label>仕入れ価格（円） <input id="s1Cost" inputmode="numeric" size="10" placeholder="例: 5000"></label>
+    <button class="btn" id="btnS1">計算する</button>
+  </div>
+  <div id="s1Result"></div>
+  <div id="s1Eagle"></div>
+
+  <h3>まとめて計算</h3>
+  <p>「タグ」と「仕入れ値」の 2 列（タブ区切り。シートからコピーしたもの）を何行でも貼り付けます。任意で、3 列目以降に <b>仕入先・仕入先コード・title・コンディション説明</b> を足せます（EAGLE 一括登録の列にそのまま持ち回します。足さなければ空欄で出します）。</p>
+  <textarea id="batchIn" rows="6" placeholder="例: サンプルA（タブ）5000"></textarea>
+  <p><button class="btn" id="btnBatch">計算する</button> <button class="btn ghost" id="btnBatchSample">見本を入れる</button></p>
+  <div id="batchOut"></div>
+  <div id="batchEagle"></div>
+
+  <h3>パターン2　翻訳まではシートで済ませ、v5インポートの行を貼り付ける</h3>
+  <p>シートの <code>v5インポート</code> シートの行（A 列から。2 行目が見出し、3 行目からデータ）を貼り付けるか、CSV を読み込むと、タグ（D）と仕入れ価格（I）から価格計算をして、EAGLE 一括登録の形にします。どの列をどこから取るかの対応表:</p>
+  <div id="v5Map"></div>
+  <textarea id="v5In" rows="5" placeholder="例: v5インポートの行を貼り付け（A 列から）"></textarea>
+  <p><button class="btn" id="btnV5">計算する</button> <button class="btn ghost" id="btnV5Sample">見本を入れる</button>
+  <label class="btn ghost" style="display:inline-block">CSV ファイルを読む<input type="file" id="v5File" accept=".csv,.tsv,.txt" hidden></label></p>
+  <div id="v5Out"></div>
+  <div id="v5Eagle"></div>
+</section>
+
+<!-- ===================== (D) ===================== -->
+<section class="panel" id="panel-D" hidden>
+  <h2>(D) ポリシーとテンプレートの一覧</h2>
+  <p>「シッピングポリシー」は eBay の送料設定のひな型です。名前の <code>Egl_2511-AAAA-BBBB_eco_used_CCCC</code> の AAAA-BBBB は、作者の運用記録では「想定販売額に対する関税しきい値の帯」で、重さとは無関係です。CCCC は、その帯に対して決めた送料の金額（ドル。関税を受け取る送料欄の額）で、このシートの計算では帯の上限として使われます。<br>コードで確認できるのは、名前の最後の数値を帯の上限として使うことと、AAAA-BBBB はコードのどこでも使われていないことです（仕様書 3.6・3.8）。関税免除用 <code>eco_used_taxfree_0500</code> の下 4 桁だけは、作者が公開している利用者向けガイドの説明では重さの上限（0500＝500g 以下）です。</p>
+  <div id="policyMode"></div>
+  <h3>ポリシーの差し替え</h3>
+  <p class="muted">シートの <code>Import_Policies</code>（A〜G 列）を貼り付けます。DDP・免除のポリシー探しに使う <code>Policy_Master</code>（A・B 列）も貼れます（貼らなければ Import_Policies の名前を使います）。</p>
+  <div class="grid2"><div><b>Import_Policies（A〜G）</b><textarea id="polPaste" rows="5"></textarea><p><button class="btn" id="btnPolApply">取り込む</button></p><div id="polMsg"></div></div>
+  <div><b>Policy_Master（A・B 列。任意）</b><textarea id="pmPaste" rows="5"></textarea><p><button class="btn" id="btnPmApply">取り込む</button></p><div id="pmMsg"></div></div></div>
+  <h3>帯の一覧</h3>
+  <p><label>表示 <select id="bandSel"><option value="all">全部</option><option value="eco_new">eco・新品</option><option value="eco_used">eco・中古</option><option value="xp_new">xp・新品</option><option value="xp_used">xp・中古</option><option value="manual">手動用・固定のみ</option></select></label> <span class="muted">下限は「同じ配送タイプ・状態で一つ前の上限 ＋ 0.01」（3.6）。</span></p>
+  <div id="bands"></div>
+  <h3>テンプレート一覧</h3>
+  <div id="tplMode"></div>
+  <p class="muted">シートの <code>Import_Templates</code> の A〜C 列を貼り付けます（式が読むのは 2〜50 行目。標準名 <code>Template_&lt;名&gt;_&lt;new|used&gt;_&lt;eco|xp&gt;</code> と完全一致で探します: 4.13）。</p>
+  <textarea id="tplPaste" rows="4"></textarea>
+  <p><button class="btn" id="btnTplApply">取り込む</button> <button class="btn ghost" id="btnPolReset">ポリシー・テンプレートを見本に戻す</button></p>
+  <div id="tplMsg"></div>
+  <div id="tplTable"></div>
+</section>
+
+<!-- ===================== (E) ===================== -->
+<section class="panel" id="panel-E" hidden>
+  <h2>(E) シートとの照合（最重要）</h2>
+  <div class="msg warn"><b>照合の前提</b><ul style="padding-left:1.3em">
+    <li>このツールは、作業シートの式の計算（V5）をまねたものです。シートの O・E 列が、式ではなく「選択行にテンプレート・ポリシーをまとめて設定する機能」で値として書かれている場合、結果が違うことがあります（仕様書 5.2・5.3・9.1）。</li>
+    <li>利益の丸め（負の .5）、関税の見積もりがタグ別の率でなく共通設定の率を使うこと（4.9・K12）など、既知の違いがあります（9 章）。Google スプレッドシートの関数の実機の挙動は未確認の部分があります（9.3）。</li>
+    <li>先に (A) タグ設定、(B) 共通設定、(D) ポリシー・テンプレート一覧を<b>シートの実際の内容</b>に合わせてください。見本のままだと、ID を含む列は必ず食い違います。</li></ul></div>
+  <p>作業シートから行をまとめてコピーして貼り付けます。貼る列は、下の「貼る列の記号」に<b>列記号をその順で</b>書いて指定します（例: <code>D, I, R, S, T, U, X, AD, AE, AG, O, E</code>）。最低限 D（タグ）と I（仕入れ値）が必要です。比べられる列: R・S・T・U・V・W・X・AD・AE・AG・AH・AQ・AR・AS・AX・AY・O・E と「出品価格」（v5出品シートの G 列）。</p>
+  <div class="field"><label>貼る列の記号（例: D, I, R …） <input id="reHeads" value="D, I, R, S, T, U, X, AD, AE, AG, O, E"></label><label class="chk"><input type="checkbox" id="reAll"> 一致した行も表に出す</label></div>
+  <textarea id="reIn" rows="6" placeholder="例: 作業シートの行を貼り付け（タブ区切り。先頭行の I 列が数値でなければ見出しとして読み飛ばし、画面に出します）"></textarea>
+  <p><button class="btn" id="btnRe">照合する</button> <button class="btn ghost" id="btnReSample">ツール自身の計算結果を貼り付けの形で入れる（動作確認用）</button></p>
+  <div id="reOut"></div>
+</section>
+
+<footer>見本ツール（計算の確認用）。計算は engine.js（calc-examples.js と同じ計算）。外部との通信はしません。</footer>
+</div>
+<script>window.POLICY_NAMES = {"note": "Actual shipping policy names (names only, no IDs) retrieved read-only via the eBay API on 2026-11-17. Last 4 digits = upper bound (USD) of the estimated-duty band. Lower bound = previous policy's upper bound + 0.01 within the same (type, condition) series; first one starts at 0.01.", "eco_used": ["Egl_2511-0000-0007_eco_used_0003", "Egl_2511-0007-0013_eco_used_0004", "Egl_2511-0013-0020_eco_used_0005", "Egl_2511-0020-0026_eco_used_0006", "Egl_2511-0026-0033_eco_used_0007", "Egl_2511-0033-0040_eco_used_0008", "Egl_2511-0040-0046_eco_used_0009", "Egl_2511-0046-0052_eco_used_0010", "Egl_2511-0052-0059_eco_used_0011", "Egl_2511-0059-0065_eco_used_0012", "Egl_2511-0065-0072_eco_used_0013", "Egl_2511-0072-0078_eco_used_0014", "Egl_2511-0078-0085_eco_used_0015", "Egl_2511-0085-0091_eco_used_0016", "Egl_2511-0091-0097_eco_used_0017", "Egl_2511-0097-0104_eco_used_0018", "Egl_2511-0104-0110_eco_used_0019", "Egl_2511-0110-0117_eco_used_0020", "Egl_2511-0117-0130_eco_used_0022", "Egl_2511-0130-0143_eco_used_0024", "Egl_2511-0143-0150_eco_used_0025", "Egl_2511-0150-0156_eco_used_0026", "Egl_2511-0156-0169_eco_used_0028", "Egl_2511-0169-0181_eco_used_0030", "Egl_2511-0181-0194_eco_used_0032", "Egl_2511-0194-0207_eco_used_0034", "Egl_2511-0207-0214_eco_used_0035", "Egl_2511-0214-0227_eco_used_0037", "Egl_2511-0227-0246_eco_used_0040", "Egl_2511-0246-0259_eco_used_0042", "Egl_2511-0259-0278_eco_used_0045", "Egl_2511-0278-0291_eco_used_0047", "Egl_2511-0291-0311_eco_used_0050", "Egl_2511-0311-0324_eco_used_0052", "Egl_2511-0324-0343_eco_used_0055", "Egl_2511-0343-0356_eco_used_0057", "Egl_2511-0356-0375_eco_used_0060", "Egl_2511-0375-0407_eco_used_0065", "Egl_2511-0407-0440_eco_used_0070"], "eco_new": "Same 39 names as eco_used with 'used' replaced by 'new' (same AAAA-BBBB parts and same last 4 digits).", "xp_used_low_range": ["Egl_2511-0000-0045_xp_used_0007", "Egl_2511-0045-0052_xp_used_0008", "Egl_2511-0052-0058_xp_used_0009", "Egl_2511-0058-0065_xp_used_0010", "Egl_2511-0065-0071_xp_used_0011", "Egl_2511-0071-0078_xp_used_0012", "Egl_2511-0078-0084_xp_used_0013", "Egl_2511-0084-0090_xp_used_0014", "Egl_2511-0090-0097_xp_used_0015", "Egl_2511-0097-0103_xp_used_0016", "Egl_2511-0103-0110_xp_used_0017", "Egl_2511-0110-0116_xp_used_0018", "Egl_2511-0116-0123_xp_used_0019", "Egl_2511-0123-0129_xp_used_0020", "Egl_2511-0129-0142_xp_used_0022", "Egl_2511-0142-0155_xp_used_0024", "Egl_2511-0155-0161_xp_used_0025", "Egl_2511-0161-0168_xp_used_0026", "Egl_2511-0168-0181_xp_used_0028", "Egl_2511-0181-0194_xp_used_0030", "Egl_2511-0194-0207_xp_used_0032", "Egl_2511-0207-0220_xp_used_0034", "Egl_2511-0220-0226_xp_used_0035", "Egl_2511-0226-0239_xp_used_0037", "Egl_2511-0239-0258_xp_used_0040", "Egl_2511-0258-0271_xp_used_0042", "Egl_2511-0271-0291_xp_used_0045", "Egl_2511-0291-0304_xp_used_0047", "Egl_2511-0304-0323_xp_used_0050", "Egl_2511-0323-0336_xp_used_0052", "Egl_2511-0336-0355_xp_used_0055", "Egl_2511-0355-0368_xp_used_0057", "Egl_2511-0368-0388_xp_used_0060", "Egl_2511-0388-0420_xp_used_0065", "Egl_2511-0420-0452_xp_used_0070"], "xp_upper_tails": "After 0070 the xp series continues in 5-dollar steps (0075, 0080, ... 0400) and then 10-dollar steps (0410, 0420, ... 0500). xp_new has the same last-4-digit values as xp_used.", "step_summary": {"eco": "0003, then 1-dollar steps 0004..0020, then 0022 0024 0025 0026 0028 0030 0032 0034 0035 0037 0040 0042 0045 0047 0050 0052 0055 0057 0060 0065 0070 (max 70)", "xp": "0007, then 1-dollar steps 0008..0020, then the same mixed steps up to 0070, then 5-dollar steps to 0400, then 10-dollar steps to 0500 (max 500)"}, "fixed_policies": ["eco_new_free", "eco_used_free", "xp_new_free", "xp_used_free", "eco_used_taxfree_0500", "eco_used_taxfree_1000", "eco_used_taxfree_1500", "eco_used_taxfree_2000"]};</script>
+<script>
+// engine.js
+// 一括登録シート V5 の価格計算ロジック（開発者向け仕様.md の疑似コードと同じ手順）。
+// calc-examples.js（検算）と tool/index.html（見本ツール）が、同じこのファイルの計算を使います。
+//   ブラウザ: <script> で読むとグローバル変数 EagleEngine ができます。
+//   node    : require('./engine.js') で同じものが取れます。
+// 外部へのアクセス（通信・ファイル読み込み）はしません。データは引数で受け取ります。
+// 行番号の根拠は仕様書側に書く。ここには「式のどの列か」だけを書く。
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.EagleEngine = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  // ============================================================
+  // 0. 小さな道具
+  // ============================================================
+  // Google スプレッドシートの ROUND は「0から遠い方へ丸める（四捨五入）」。JS の Math.round は負の .5 で挙動が違うので符号を分ける。
+  function sheetRound(x, digits) {
+    const f = Math.pow(10, digits);
+    const s = x < 0 ? -1 : 1;
+    return s * Math.round(Math.abs(x) * f) / f;
+  }
+  // シートの式 ROUND((...)*100)/100 と同じ（R列）
+  function roundHundredth(x) { return sheetRound(x * 100, 0) / 100; }
+
+  class SheetError { constructor(code, note) { this.code = code; this.note = note || ''; } toString() { return this.code; } }
+  const isErr = (v) => v instanceof SheetError;
+
+  // TagShipping の「15%」形式セルを小数へ。式: IFERROR(VALUE(SUBSTITUTE(INDEX(..),"%",""))/100, 既定値)
+  // ここは文字列セル（"15%" や "15"）だけを扱う。数値セルや空セルの扱いは Google Sheets 実機で未確認（仕様書 9 章）。
+  function percentCell(v) {
+    if (typeof v !== 'string') return null;
+    const s = v.replace(/%/g, '').trim();
+    if (s === '') return null;
+    const n = Number(s);
+    return isNaN(n) ? null : n / 100;
+  }
+
+  // VLOOKUP(key, 範囲, col, TRUE)（近似一致。A列は昇順前提）
+  function vlookupApprox(rows, key, col) {
+    let hit = null;
+    for (const r of rows) {
+      if (typeof r[0] === 'number' && r[0] <= key) hit = r; else break;
+    }
+    return hit ? hit[col - 1] : new SheetError('#N/A');
+  }
+
+  // ============================================================
+  // 1. 固定データ（例用の仮データ。実在のポリシーID・テンプレートIDは使っていない）
+  // ============================================================
+  // Profit_Amounts: 既定サンプル（setupProfitAmountSheet の初期値と同じ形）。列: A=仕入下限, B=仕入上限, C=利益額(円), D=送料(円)
+  const PROFIT_AMOUNTS = [
+    [0, 1000, 200, 800],
+    [1001, 5000, 500, 1200],
+    [5001, 10000, 1000, 1500],
+    [10001, 20000, 2000, 2000],
+    [20001, '', 3000, 2500],
+  ];
+
+  // Import_Templates の A(ID) と C(標準名)。ID はダミー
+  const IMPORT_TEMPLATES = [
+    { A: 800001, C: 'Template_一般汎用_new_eco' },
+    { A: 800002, C: 'Template_一般汎用_used_eco' },
+    { A: 800003, C: 'Template_一般汎用_new_xp' },
+    { A: 800004, C: 'Template_一般汎用_used_xp' },
+  ];
+
+  // EAGLE が返すポリシー名の一覧を作る。actual は policy-names-actual.json の中身（呼ぶ側が読む）。
+  // ポリシーID は全て見本用の作り物（900001〜）で、実在のIDではない。
+  //   - eco_used 39 本は実名。eco_new は used を new に置換した 39 本。
+  //   - xp_used 0007〜0070 の 35 本は実名。xp_new は同じ置換。
+  //   - xp の 0075〜0400（5ドル刻み）と 0410〜0500（10ドル刻み）は、実名の AAAA-BBBB 部分が手元に無いので
+  //     「Egl_2511-(省略)_xp_used_0075」のように省略と分かる名前にする（コードが使うのは下4桁だけ）。
+  //   - 固定ポリシー（free・taxfree）の名前は接頭辞なしで、fixed_policies の文字列そのもの。
+  const OMIT = 'Egl_2511-(省略)_';
+  function makeEaglePolicies(actual) {
+    const list = [];
+    let id = 900001;
+    const add = (name) => list.push({ id: id++, name });
+    const toNew = (n) => n.replace('_used_', '_new_');
+    actual.eco_used.forEach((n) => add(n));
+    actual.eco_used.forEach((n) => add(toNew(n)));
+    const tails = [];
+    for (let v = 75; v <= 400; v += 5) tails.push(OMIT + 'xp_used_' + String(v).padStart(4, '0'));
+    for (let v = 410; v <= 500; v += 10) tails.push(OMIT + 'xp_used_' + String(v).padStart(4, '0'));
+    const xpUsed = actual.xp_used_low_range.concat(tails);
+    xpUsed.forEach((n) => add(n));
+    xpUsed.forEach((n) => add(toNew(n)));
+    actual.fixed_policies.forEach((f) => add(f));
+    return list;
+  }
+
+  // ============================================================
+  // 2. ポリシー名 → Import_Policies の行（EAGLE商品データ連携.gs の writeTemplatesAndPoliciesToImportSheets と同じ手順）
+  // ============================================================
+  // parsePolicyNameForImport と同じ（Utils.gs）。5要素形式と、6要素以上の形式
+  function parsePolicyNameForImport(name) {
+    if (!name || typeof name !== 'string') return null;
+    if (name.indexOf('Copy') !== -1) return null;
+    const parts = name.split('_');
+    if (parts.length === 5) {
+      const type = parts[2].toLowerCase();
+      if (type !== 'eco' && type !== 'xp') return null;
+      const cond = parts[3].toLowerCase();
+      if (cond !== 'new' && cond !== 'used') return null;
+      const mx = parseInt(parts[4], 10);
+      if (isNaN(mx)) return null;
+      return { type, condition: cond, minPrice: 0, maxPrice: mx };
+    }
+    if (parts.length >= 6) {
+      if (parts[1].indexOf('-') === -1) return null;
+      const type = parts[2].toLowerCase();
+      if (type !== 'eco' && type !== 'xp') return null;
+      const cond = parts[3].toLowerCase();
+      if (cond !== 'new' && cond !== 'used') return null;
+      let mn = parseInt(parts[parts.length - 2], 10);
+      if (isNaN(mn)) return null;
+      let mx = parts[parts.length - 1] ? parseInt(parts[parts.length - 1], 10) : 99999;
+      if (isNaN(mx)) mx = 99999;
+      mn = (mn === 1) ? 0.01 : (mn - 1) + 0.01;
+      return { type, condition: cond, minPrice: mn, maxPrice: mx };
+    }
+    return null;
+  }
+
+  // Import_Policies の A〜G を作る（並べ替え→下限を前の上限+0.01 にする）。手動用は C='手動用'、D〜G 空
+  function buildImportPolicies(policies) {
+    const parsed = policies.map((p) => ({ id: p.id, name: p.name, parsed: parsePolicyNameForImport(p.name) }));
+    const auto = parsed.filter((p) => p.parsed !== null);
+    const manual = parsed.filter((p) => p.parsed === null);
+    auto.sort((a, b) => {
+      if (a.parsed.type !== b.parsed.type) return a.parsed.type === 'eco' ? -1 : 1;
+      if (a.parsed.condition !== b.parsed.condition) return a.parsed.condition === 'new' ? -1 : 1;
+      return a.parsed.maxPrice - b.parsed.maxPrice;
+    });
+    for (let i = 0; i < auto.length; i++) {
+      if (i === 0) auto[i].parsed.minPrice = 0.01;
+      else {
+        const prev = auto[i - 1], cur = auto[i];
+        cur.parsed.minPrice = (prev.parsed.type === cur.parsed.type && prev.parsed.condition === cur.parsed.condition)
+          ? prev.parsed.maxPrice + 0.01 : 0.01;
+      }
+    }
+    const rows = [];
+    auto.forEach((p) => rows.push([p.id, p.name, p.parsed.maxPrice, p.parsed.type, p.parsed.condition, p.parsed.minPrice, p.parsed.maxPrice]));
+    manual.forEach((p) => rows.push([p.id, p.name, '手動用', '', '', '', '']));
+    return rows;
+  }
+
+  // ============================================================
+  // 3. シッピングポリシー選択（式側）= GET_SHIPPING_POLICY_FROM_IMPORT（Utils.gs）の移植
+  // ============================================================
+  const SHIPPING_POLICY_CATEGORIES = { 'Video Games': 20, 'Video Game Consoles': 50, 'Video Game Accessories': 25, 'Books': 20, 'Movies & TV': 20, 'Music': 25, 'Other': null };
+  function shippingLimitForCategory(display) {            // getShippingLimitForCategory_
+    let name = String(display || '').trim();
+    const p = name.indexOf('（');
+    if (p !== -1) name = name.substring(0, p).trim();
+    if (name === '汎用' || name.indexOf('汎用') !== -1) return null;
+    if (name === 'Game Consoles') name = 'Video Game Consoles';
+    if (Object.prototype.hasOwnProperty.call(SHIPPING_POLICY_CATEGORIES, name)) return SHIPPING_POLICY_CATEGORIES[name];
+    return null;
+  }
+  function methodToType(m) {                               // convertShippingMethodToType_（Utils.gs）。EMS は含まれない
+    m = String(m || '').trim();
+    if (m === '自動選択' || m === '') return 'エラー';
+    if (['CE', 'EP', 'Cpass-Economy', 'ePacket'].indexOf(m) !== -1) return 'エコノミー';
+    if (['CF', 'CD', 'EL', 'Cpass-FedEx', 'Cpass-DHL', 'eLogistics'].indexOf(m) !== -1) return 'EX';
+    return 'エラー';
+  }
+  function getShippingPolicyFromImport(categoryDisplay, estimatedTax, condition, method, data) {
+    if (!categoryDisplay || !estimatedTax || !condition || !method) return '';
+    const tax = Number(estimatedTax);
+    if (isNaN(tax) || tax <= 0) return 'エラー';
+    const st = methodToType(method);
+    if (st === 'エラー') return 'エラー';
+    if (condition !== '新品' && condition !== '中古') return 'エラー';
+    const limit = shippingLimitForCategory(categoryDisplay);
+    if (!data) return 'エラー';
+    if (data.length === 0) return '該当なし';
+    const condEn = condition === '新品' ? 'new' : 'used';
+    const typeAbbr = st === 'エコノミー' ? 'eco' : 'xp';
+    const cands = [];
+    let maxPol = null, maxVal = 0;
+    for (const r of data) {
+      const [id, , fee, type, cond, mn, mx] = r;
+      if (!type) continue;
+      if (cond !== condEn) continue;
+      if (type !== typeAbbr) continue;
+      if (limit !== null && typeof fee === 'number' && fee > limit) continue;
+      if (mx > maxVal) { maxVal = mx; maxPol = id; }
+      if (tax < mn || tax > mx) continue;
+      cands.push(id);
+    }
+    if (cands.length === 0) {
+      if (maxPol !== null && tax > maxVal) return maxPol;
+      if (limit !== null) {
+        let best = null, bestFee = 0;
+        for (const r of data) {
+          const [id, , fee, type, cond] = r;
+          if (!type) continue;
+          if (cond !== condEn) continue;
+          if (type !== typeAbbr) continue;
+          if (typeof fee !== 'number') continue;
+          if (fee > limit) continue;
+          if (fee > bestFee) { bestFee = fee; best = id; }
+        }
+        if (best !== null) return best;
+      }
+      return '該当なし';
+    }
+    return cands[0];
+  }
+
+  // ============================================================
+  // 4. 作業シート 1 行ぶんの計算（V5。列の依存順に計算）
+  //    ctx: { S(設定セル), tags(TagShipping), profitCalc('RATE'|'AMOUNT'), shippingCalc('TAG_SHIPPING'|'FIXED'),
+  //           profitAmounts(Profit_Amounts の A〜D), templates(Import_Templates の {A,C}),
+  //           policyMasterB(Policy_Master の B 列に並ぶ {id,name}), importPolicies(Import_Policies の A〜G) }
+  //    row: { D:タグ, I:仕入価格(円) }
+  // ============================================================
+  const TAG_COL = { EP: 'B', CE: 'C', CF: 'D', CD: 'D', EL: 'D', ePacket: 'B', 'Cpass-Economy': 'C', 'Cpass-FedEx': 'D', 'Cpass-DHL': 'D', eLogistics: 'D' };
+  const METHOD = { PROFIT_RATE: 'タグ別利益率', PROFIT_AMOUNT: '利益額（Profit_Amounts参照）', SHIPPING_TAG: 'タグ別送料', SHIPPING_FIXED: '固定金額（Profit_Amounts参照）' };
+  const TF_TAG = /^DDP_TF_(\d{4})$/;
+
+  function tagThreshold(tag) {          // TagShipping O 列の式: =IF(H="","",IFERROR(VALUE(REGEXEXTRACT(H,"\$([0-9]+)")),""))
+    if (!tag || tag.H === undefined || tag.H === '') return '';
+    const m = /\$([0-9]+)/.exec(tag.H);
+    return m ? Number(m[1]) : '';
+  }
+  function tfGateOf(tags) {             // applyCalculationFormulas の tfGate: どれかのタグの R が DDP_TF_<4桁>
+    return Object.keys(tags).some((k) => TF_TAG.test(String(tags[k].R || '').trim().toUpperCase()));
+  }
+
+  function calcSheetRow(ctx, row) {
+    ['profitAmounts', 'templates', 'policyMasterB', 'importPolicies'].forEach((k) => {
+      if (!ctx[k]) throw new Error('calcSheetRow: ctx.' + k + ' がありません');
+    });
+    const PROFIT_TABLE = ctx.profitAmounts, TEMPLATES = ctx.templates, POLICY_MASTER_B = ctx.policyMasterB, IMPORT_POLICIES = ctx.importPolicies;
+    const S = ctx.S;
+    const tags = ctx.tags;
+    const tag = Object.prototype.hasOwnProperty.call(tags, row.D) ? tags[row.D] : null;   // MATCH(D, A:A, 0)（完全一致。前後に空白があれば不一致）
+    const out = { D: row.D, I: row.I, tag: tag ? row.D : '(未登録)' };
+    if (row.D === '') return out;
+    const I = row.I;
+    const gate = tfGateOf(tags);
+    out.tfGate = gate;
+
+    // --- AE 商品状態
+    let AE;
+    if (!tag) AE = S.P2;
+    else AE = (tag.P === 'AI' || tag.P === undefined || tag.P === '') ? S.P2 : tag.P;
+    out.AE = AE;
+
+    // --- X 配送方法
+    let X;
+    if (ctx.shippingCalc === 'FIXED') {
+      X = (S.AQ2 === 'NONE' || I >= S.AJ4) ? S.AQ3 : S.AQ2;
+    } else {
+      const low = (tag && tag.L !== undefined && tag.L !== '') ? tag.L : S.AQ2;
+      const high = (tag && tag.M !== undefined && tag.M !== '') ? tag.M : S.AQ3;
+      const th = (tag && tag.N !== undefined && tag.N !== '') ? tag.N : S.AJ4;
+      X = (low === 'NONE' || I >= th) ? high : low;
+    }
+    out.X = X;
+
+    // --- AX / AY（DDPフラグ・免除フラグ）
+    const tR = tag ? String(tag.R === undefined ? '' : tag.R).trim().toUpperCase() : null;
+    let AX = 'DDU', AY = '';
+    if (tag) {
+      if (!gate) {
+        AX = (tR === 'DDP' || tR === 'DDU') ? tR : 'DDU';
+      } else {
+        AX = (tR === 'DDP' || tR === 'DDU') ? tR : ((TF_TAG.test(tR) && X === 'EP' && AE === '中古') ? 'DDP' : 'DDU');
+        AY = (AX === 'DDP' && TF_TAG.test(tR)) ? 'TF_' + tR.slice(-4) : '';
+      }
+    }
+    out.AX = AX; out.AY = AY;
+
+    // --- AS 適用送料（V5 の T 列 = AS）
+    const shipMethod = (tag && tag.T !== undefined && tag.T !== '') ? tag.T : METHOD.SHIPPING_TAG;
+    let AS;
+    if (shipMethod === METHOD.SHIPPING_FIXED) {
+      if (I === '') AS = '';
+      else AS = (S.J1 !== '' && S.J1 !== undefined) ? S.J1 : vlookupApprox(PROFIT_TABLE, I, 4);
+    } else if (X === '') {
+      AS = '#配送方法未設定';
+    } else if (!tag || !Object.prototype.hasOwnProperty.call(TAG_COL, X)) {
+      AS = '#タグ未登録';              // 未登録タグ、または SWITCH に無い配送方法（EMS・AM など）はここに落ちる
+    } else {
+      AS = tag[TAG_COL[X]];
+    }
+    out.AS = AS; out.T = AS;
+
+    // --- 手数料率 V・広告費率 adRef（タグ別。無ければシートの F1 / F2）
+    const V = (tag && percentCell(tag.K) !== null) ? percentCell(tag.K) : S.F1;
+    const ad = (tag && percentCell(tag.J) !== null) ? percentCell(tag.J) : S.F2;
+    out.V = V; out.ad = ad;
+
+    // --- 利益方法（S列）。未登録・空欄は「タグ別利益率」
+    const profitMethod = (tag && tag.S !== undefined && tag.S !== '') ? tag.S : METHOD.PROFIT_RATE;
+    out.profitMethod = ctx.profitCalc === 'AMOUNT' ? '(全体=利益額)' : profitMethod;
+
+    // --- AQ 適用利益率 / AR 適用利益額（V5 かつ全体が利益率のときだけ存在）
+    let AQ = '', AR = '';
+    if (ctx.profitCalc === 'RATE') {
+      if (profitMethod === METHOD.PROFIT_AMOUNT) AQ = '';
+      else AQ = (tag && percentCell(tag.I) !== null) ? percentCell(tag.I) : S.H2;
+      if (I === '') AR = '';
+      else AR = (profitMethod === METHOD.PROFIT_AMOUNT) ? ((S.H1 !== '' && S.H1 !== undefined) ? S.H1 : vlookupApprox(PROFIT_TABLE, I, 3)) : '';
+    }
+    out.AQ = AQ; out.AR = AR;
+
+    // --- U の利益額（全体が利益額のとき）
+    let Uglobal = '';
+    if (ctx.profitCalc === 'AMOUNT') Uglobal = (I === '') ? '' : ((S.H1 !== '' && S.H1 !== undefined) ? S.H1 : vlookupApprox(PROFIT_TABLE, I, 3));
+
+    // --- R 販売価格（DDU価格）
+    let R;
+    const asText = (typeof AS === 'string' && AS !== '') || isErr(AS);
+    if (I === '') R = '';
+    else if (asText || isErr(AR) || isErr(Uglobal)) R = new SheetError('#VALUE!', '想定。AS/AR が文字列のため。Sheets 実機は未確認');
+    else if (ctx.profitCalc === 'RATE') {
+      if (profitMethod === METHOD.PROFIT_AMOUNT) R = roundHundredth((I + AS + AR) / (1 - (V + ad + S.Z2)) / S.C2);
+      else R = roundHundredth((I + AS) / (1 - (V + AQ + ad + S.Z2)) / S.C2);
+    } else {
+      R = roundHundredth((I + AS + Uglobal) / (1 - (V + ad + S.Z2)) / S.C2);
+    }
+    out.R = R;
+
+    // --- U 利益（円）
+    let U;
+    if (R === '' || isErr(R)) U = R;
+    else if (ctx.profitCalc === 'RATE') {
+      U = (profitMethod === METHOD.PROFIT_AMOUNT) ? AR : sheetRound(R * S.C2 * (1 - (V + ad + S.Z2)) - I - AS, 0);
+    } else U = Uglobal;
+    out.U = U;
+
+    // --- AF2 調整後関税率 / AD 想定関税 / AH 実際の関税額 / S 関税込み価格
+    const AF2 = S.AA2 / (1 - S.F1 - S.F2) * 1.03;
+    out.AF2 = AF2;
+    let AD, AH, S_;
+    if (R === '' || isErr(R)) { AD = R; AH = R; S_ = R; }
+    else {
+      const ce = X === 'CE' ? S.AB2 / S.C2 : 0;
+      const common = (rate) => R * rate * (1 + S.AG2) + R * S.AE2 * S.AG2 + ce + S.AH2 + S.AC2 / S.C2;
+      if (gate && AY.indexOf('TF_') === 0) {
+        const zonos = (typeof S.AZ2 === 'number') ? S.AZ2 : 1.69;
+        const label = (typeof S.BA2 === 'number') ? S.BA2 : 50;
+        const den = 1 - S.F1 - S.F2 - S.Z2;
+        AD = den <= 0 ? new SheetError('#N/A') : sheetRound((zonos + label / S.C2) / den, 2);
+        AH = sheetRound(zonos + label / S.C2, 2);
+      } else {
+        AD = sheetRound(common(AF2), 2);
+        AH = sheetRound(common(S.AA2), 2);
+      }
+      S_ = isErr(AD) ? AD : sheetRound(R + AD, 2);
+    }
+    out.AD = AD; out.AH = AH; out.S = S_;
+
+    // --- AG DDU調整後価格
+    const thrCell = tagThreshold(tag);
+    const thr = (tag && thrCell !== '') ? thrCell : S.AP3;
+    out.thr = thr;
+    let AG = '';
+    if (S.AP2 === 'ON' && !isErr(AD) && AD !== '' && AD >= thr) AG = S_ - thr;
+    out.AG = AG;
+
+    // --- O シッピングポリシー
+    const cat = tag ? (tag.H === undefined ? '' : tag.H) : S.O1;
+    let O;
+    if (isErr(AD)) O = AD;                       // ISBLANK(AD) の評価でエラー値が伝わる想定（Sheets 実機は未確認）
+    else if (cat === '' || AD === '' || AE === '' || X === '') O = '';
+    else if (gate && AY.indexOf('TF_') === 0) {
+      const key = ('eco_used_taxfree_' + AY.slice(-4)).toLowerCase();
+      const hit = POLICY_MASTER_B.find((p) => p.name.toLowerCase().endsWith(key));
+      O = hit ? hit.id : '該当なし';
+    } else if (AX.trim().toUpperCase() === 'DDP') {
+      const type = (X === 'EP' || X === 'CE') ? 'eco' : ((X === 'CF' || X === 'CD' || X === 'EL' || X === 'EMS') ? 'xp' : '');
+      const cond = AE === '新品' ? 'new' : (AE === '中古' ? 'used' : '');
+      const key = (type + '_' + cond + '_free').toLowerCase();
+      const hit = POLICY_MASTER_B.find((p) => p.name.toLowerCase().endsWith(key));
+      O = hit ? hit.id : '該当なし';
+    } else {
+      const taxArg = (S.AP2 === 'ON' && AD >= thr) ? thr : AD;
+      O = getShippingPolicyFromImport(cat, taxArg, AE, X, IMPORT_POLICIES);
+      out.policyTaxArg = taxArg;
+    }
+    out.O = O;
+
+    // --- E テンプレートID
+    const tpl = tag ? (tag.G === undefined ? '' : tag.G) : S.O2;
+    let E;
+    if (tpl === '' || AE === '' || X === '') E = '';
+    else {
+      const key = ('Template_' + tpl + '_' + (AE === '新品' ? 'new' : 'used') + '_' + ((X === 'EP' || X === 'CE') ? 'eco' : 'xp')).toLowerCase();
+      const hit = TEMPLATES.find((t) => t.C.toLowerCase() === key);
+      E = hit ? hit.A : '該当なし';
+    }
+    out.E = E;
+
+    // --- v5出品 シートの「出品価格」 =IF(R="","",IF(AGが数値,AG,IF(UPPER(TRIM(AX))="DDP",S,R)))
+    out.listing = (R === '' || isErr(R)) ? R : (typeof AG === 'number' ? AG : (AX.trim().toUpperCase() === 'DDP' ? S_ : R));
+    return out;
+  }
+
+  // ============================================================
+  // 5. 8章の入力（設定セル・TagShipping）。為替 150 で固定
+  // ============================================================
+  // 設定セルの値。出所: 利益早見表の初期値（手数料18%・Payoneer 2%・関税率15%・関税処理手数料率2.1%・VAT 0%・EU差額 0円・MPF 0・CE通関296円）。
+  // F2(広告費率)・H2(利益率)・AJ4・AP3 などは「例のための仮の値」。シートの AF2 は ×1.03 が固定なので、上乗せ係数 1 は再現できない。
+  const BASE_S = {
+    C2: 150, F1: 0.18, F2: 0.05, H1: '', H2: 0.10, J1: '', Z2: 0.02,
+    AA2: 0.15, AB2: 296, AC2: 0, AE2: 0, AG2: 0.021, AH2: 0,
+    AJ4: 15000, AQ2: 'EP', AQ3: 'CF', AP2: 'OFF', AP3: 500,
+    O1: '汎用（上限なし）', O2: '一般汎用', P2: '中古', AZ2: 1.69, BA2: 50,
+  };
+  const TAGS = {
+    'サンプルA': { B: 1500, C: 1300, D: 3000, G: '一般汎用', H: '汎用（上限なし）', I: '10%', J: '5%', K: '18%', L: 'EP', M: 'CF', N: 15000, P: '中古', R: 'DDU', S: METHOD.PROFIT_RATE, T: METHOD.SHIPPING_TAG },
+    'サンプルB': { B: 1500, C: 1300, D: 3000, G: '一般汎用', H: '汎用（上限なし）', I: '10%', J: '5%', K: '18%', L: 'EP', M: 'CF', N: 15000, P: '中古', R: 'DDU', S: METHOD.PROFIT_AMOUNT, T: METHOD.SHIPPING_TAG },
+    'サンプルC': { B: 1500, C: 1300, D: 3000, G: '一般汎用', H: '汎用（上限なし）', I: '10%', J: '5%', K: '18%', L: 'EP', M: 'CF', N: 15000, P: '中古', R: 'DDU', S: METHOD.PROFIT_RATE, T: METHOD.SHIPPING_FIXED },
+    'サンプルD': { B: 1500, C: 1300, D: 3000, G: '一般汎用', H: '汎用（上限なし）', I: '10%', J: '5%', K: '18%', L: 'EP', M: 'CF', N: 15000, P: '中古', R: 'DDP_TF_0500', S: METHOD.PROFIT_RATE, T: METHOD.SHIPPING_TAG },
+    'サンプルE': { B: 1500, C: 1300, D: 3000, G: '一般汎用', H: '汎用（上限なし）', I: '10%', J: '5%', K: '18%', L: 'EP', M: 'CF', N: 15000, P: '新品', R: 'DDP', S: METHOD.PROFIT_RATE, T: METHOD.SHIPPING_TAG },
+    'サンプルF': { B: 1500, C: 1300, D: 3000, G: '一般汎用', H: 'Video Games（$20）', I: '10%', J: '5%', K: '18%', L: 'CE', M: 'CF', N: 15000, P: '新品', R: 'DDU', S: METHOD.PROFIT_RATE, T: METHOD.SHIPPING_TAG },
+  };
+
+  // ============================================================
+  // 6. 8章の例（通しの例）
+  // ============================================================
+  const EXAMPLES = [
+    { id: '例1', title: '通常DDU・利益率方式（タグ別の利益率10%、配送EP）', S: {}, profitCalc: 'RATE', shippingCalc: 'TAG_SHIPPING', row: { D: 'サンプルA', I: 5000 } },
+    { id: '例2', title: '利益額方式（タグの利益方法が「利益額（Profit_Amounts参照）」。利益額は Profit_Amounts の C 列）', S: {}, profitCalc: 'RATE', shippingCalc: 'TAG_SHIPPING', row: { D: 'サンプルB', I: 8000 } },
+    { id: '例2b', title: '利益額方式（シート全体が利益額。R式は (I+T+U)/(1-(V+広告費率+Z2))/C2）', S: {}, profitCalc: 'AMOUNT', shippingCalc: 'TAG_SHIPPING', row: { D: 'サンプルA', I: 8000 } },
+    { id: '例3', title: '固定送料（タグの送料方法が「固定金額（Profit_Amounts参照）」、J1 は空 → Profit_Amounts の D 列）', S: {}, profitCalc: 'RATE', shippingCalc: 'TAG_SHIPPING', row: { D: 'サンプルC', I: 3000 } },
+    { id: '例4', title: 'DDU調整あり（AP2=ON、想定関税が閾値以上）', S: { AP2: 'ON' }, profitCalc: 'RATE', shippingCalc: 'TAG_SHIPPING', row: { D: 'サンプルA', I: 250000 } },
+    { id: '例5', title: '関税免除（DDP_TF_0500 × EP × 中古）', S: {}, profitCalc: 'RATE', shippingCalc: 'TAG_SHIPPING', row: { D: 'サンプルD', I: 3000 } },
+    { id: '例6', title: '通常DDP（タグの DDP/DDU設定=DDP、EP、新品）', S: {}, profitCalc: 'RATE', shippingCalc: 'TAG_SHIPPING', row: { D: 'サンプルE', I: 3000 } },
+    { id: '例7', title: 'CE配送（通関手数料を加算）＋送料上限カテゴリ Video Games（$20）', S: {}, profitCalc: 'RATE', shippingCalc: 'TAG_SHIPPING', row: { D: 'サンプルF', I: 4000 } },
+    { id: '例8', title: 'タグ未登録（既定値への倒れ方）', S: {}, profitCalc: 'RATE', shippingCalc: 'TAG_SHIPPING', row: { D: '未登録のタグ', I: 5000 } },
+  ];
+
+  // ============================================================
+  // 7. SKU（C列）生成の移植（Utils.gs generateSkuForRows_ の採番部分）
+  // ============================================================
+  function makeSku(code, dateObj, existingMaxSeqByKey) {
+    const yy = String(dateObj.getFullYear()).slice(-2);
+    const mm = ('0' + (dateObj.getMonth() + 1)).slice(-2);
+    const dd = ('0' + dateObj.getDate()).slice(-2);
+    const key = code.toLowerCase() + yy + mm + dd;
+    const next = (existingMaxSeqByKey[key] || 0) + 1;
+    existingMaxSeqByKey[key] = next;
+    return code.toLowerCase() + yy + mm + dd + ('000' + next).slice(-3);
+  }
+
+  return {
+    sheetRound, roundHundredth, SheetError, isErr, percentCell, vlookupApprox,
+    PROFIT_AMOUNTS, IMPORT_TEMPLATES, OMIT, makeEaglePolicies,
+    parsePolicyNameForImport, buildImportPolicies,
+    SHIPPING_POLICY_CATEGORIES, shippingLimitForCategory, methodToType, getShippingPolicyFromImport,
+    TAG_COL, METHOD, TF_TAG, tagThreshold, tfGateOf, calcSheetRow,
+    BASE_S, TAGS, EXAMPLES, makeSku,
+  };
+});
+
+</script>
+<script>
+// logic.js
+// 見本ツールの「画面に依存しない部分」: タグ設定の取り込み・入力チェック・書き出し、共通設定、
+// 1件／まとめての計算の包み、途中経過の説明文、ポリシー／テンプレート一覧の取り込み、シートとの照合。
+// 計算そのものは engine.js（calc-examples.js と同じもの）を使います。外部への通信はしません。
+//   ブラウザ: engine.js の後に読むとグローバル変数 EagleLogic ができます。 node: require('./logic.js')。
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./engine.js'));
+  else root.EagleLogic = factory(root.EagleEngine);
+})(typeof self !== 'undefined' ? self : this, function (E) {
+  'use strict';
+  const { SheetError, isErr, METHOD, TAG_COL, TF_TAG } = E;
+
+  // ============================================================
+  // 0. 文字の道具
+  // ============================================================
+  const nfkc = (s) => String(s === undefined || s === null ? '' : s).normalize('NFKC');
+  const trimAll = (s) => String(s).replace(/^[\s　 ]+|[\s　 ]+$/g, '');
+  const isNumText = (s) => /^-?\d+(\.\d+)?$/.test(s);
+
+  // タブ区切り・カンマ区切りを読む。引用符（"…"）の中の改行・区切り文字・"" に対応。区切りは、タブがあればタブ、なければカンマ。
+  function parseDelimited(text, forceDelim) {
+    let t = String(text === undefined || text === null ? '' : text);
+    if (t.charCodeAt(0) === 0xFEFF) t = t.slice(1);
+    const delim = forceDelim || (t.indexOf('\t') !== -1 ? '\t' : ',');
+    const rows = [];
+    let row = [], cell = '', inQ = false, i = 0;
+    const pushCell = () => { row.push(cell); cell = ''; };
+    const pushRow = () => { pushCell(); rows.push(row); row = []; };
+    while (i < t.length) {
+      const ch = t[i];
+      if (inQ) {
+        if (ch === '"') { if (t[i + 1] === '"') { cell += '"'; i += 2; continue; } inQ = false; i++; continue; }
+        cell += ch; i++; continue;
+      }
+      if (ch === '"' && cell === '') { inQ = true; i++; continue; }
+      if (ch === delim) { pushCell(); i++; continue; }
+      if (ch === '\r') { if (t[i + 1] === '\n') i++; pushRow(); i++; continue; }
+      if (ch === '\n') { pushRow(); i++; continue; }
+      cell += ch; i++;
+    }
+    if (cell !== '' || row.length > 0) pushRow();
+    return { rows, delimiter: delim };
+  }
+  function quoteCell(c, delim) {
+    const s = String(c === undefined || c === null ? '' : c);
+    return (s.indexOf('"') !== -1 || s.indexOf(delim) !== -1 || s.indexOf('\n') !== -1 || s.indexOf('\r') !== -1) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+  function toDelimited(rows, delim) {
+    return rows.map((r) => r.map((c) => quoteCell(c, delim)).join(delim)).join('\n');
+  }
+  const isBlankRow = (r) => r.every((c) => trimAll(c) === '');
+
+  // ============================================================
+  // 1. TagShipping（タグ設定）の列の定義（仕様書 3.3）
+  // ============================================================
+  const TAG_COLS = [
+    { key: 'A', head: 'タグ名', kind: 'raw' },
+    { key: 'B', head: 'EP送料', kind: 'num' },
+    { key: 'C', head: 'CE送料', kind: 'num' },
+    { key: 'D', head: 'CF/CD送料', kind: 'num' },
+    { key: 'E', head: '参考eBay ID', kind: 'str' },
+    { key: 'F', head: 'SKU略称', kind: 'str' },
+    { key: 'G', head: 'テンプレート名', kind: 'str' },
+    { key: 'H', head: '送料上限カテゴリ', kind: 'paren' },
+    { key: 'I', head: '利益率', kind: 'rate' },
+    { key: 'J', head: '広告費率', kind: 'rate' },
+    { key: 'K', head: '手数料率', kind: 'rate' },
+    { key: 'L', head: '低価格配送', kind: 'sel' },
+    { key: 'M', head: '高価格配送', kind: 'sel' },
+    { key: 'N', head: '送料切替基準', kind: 'num' },
+    { key: 'O', head: '想定関税閾値', kind: 'derived' },
+    { key: 'P', head: '商品状態', kind: 'sel' },
+    { key: 'Q', head: '翻訳プロンプト', kind: 'str' },
+    { key: 'R', head: 'DDP/DDU設定', kind: 'sel' },
+    { key: 'S', head: '利益方法', kind: 'paren' },
+    { key: 'T', head: '送料方法', kind: 'paren' },
+  ];
+  const TAG_KEYS = TAG_COLS.map((c) => c.key);
+  const STORED_KEYS = TAG_KEYS.filter((k) => k !== 'O');   // O は式の列。H から作れるので保存しない
+  const CATEGORIES = ['汎用（上限なし）', 'Video Games（$20）', 'Books（$20）', 'Movies & TV（$20）', 'Music（$25）', 'Game Consoles（$50）'];
+  const CHOICES = {
+    H: CATEGORIES, L: ['EP', 'CE', 'NONE'], M: ['CF', 'CD', 'EL'], P: ['新品', '中古', 'AI'],
+    S: [METHOD.PROFIT_RATE, METHOD.PROFIT_AMOUNT], T: [METHOD.SHIPPING_TAG, METHOD.SHIPPING_FIXED],
+  };
+  const RATE_RANGE = { I: [0, 45], J: [0, 15], K: [13, 25] };     // P3:4089-4114（シートの選択リスト。1% 刻みの整数）
+  const RATE_LABEL = { I: '利益率', J: '広告費率', K: '手数料率' };
+
+  function emptyTag() { const o = {}; STORED_KEYS.forEach((k) => { o[k] = ''; }); return o; }
+  function derivedO(tag) { const v = E.tagThreshold(tag); return v === '' ? '' : v; }
+
+  // 「直すとしたらこの値」の案（人が「この値を直す」を押したときだけ使う）。{ value, fix } を返す
+  function suggestCell(key, raw) {
+    const r0 = String(raw === undefined || raw === null ? '' : raw);
+    const kind = TAG_COLS[TAG_KEYS.indexOf(key)].kind;
+    if (kind === 'raw') return { value: r0, fix: null };
+    const t = trimAll(r0);
+    if (t === '') return { value: '', fix: null };
+    const note = (v, why) => (v !== r0 ? { value: v, fix: why } : { value: v, fix: null });
+    if (kind === 'num') {
+      const s = nfkc(t).replace(/[,\s¥￥円$]/g, '');
+      if (isNumText(s)) {
+        const n = Number(s);
+        return s !== t ? { value: n, fix: '数値にそろえました（全角・カンマ・円記号などを取りました）: 「' + t + '」→ ' + n } : { value: n, fix: null };
+      }
+      return { value: t, fix: null };
+    }
+    if (kind === 'rate') {
+      let s = nfkc(t).replace(/\s/g, '');
+      if (s.slice(-1) === '%') s = s.slice(0, -1);
+      if (isNumText(s)) return note(s + '%', '率を「n%」の形にそろえました: 「' + t + '」→ 「' + s + '%」（シートの式は % を取って 100 で割るので、「18」でも「18%」でも同じ 0.18 になります）');
+      return { value: t, fix: null };
+    }
+    if (kind === 'sel') {
+      const v = nfkc(t);
+      return note(v, '全角を半角にし、前後の空白を取りました: 「' + t + '」→ 「' + v + '」');
+    }
+    if (kind === 'paren') {
+      let v = t.replace(/\(/g, '（').replace(/\)/g, '）').replace(/＄/g, '$').replace(/\s+（/g, '（');
+      return note(v, '前後の空白を取り、カッコを全角にしました（シートの値は全角カッコの文字列の完全一致です）: 「' + t + '」→ 「' + v + '」');
+    }
+    if (kind === 'str') {
+      return note(t, '前後の空白を取りました: 「' + r0 + '」→ 「' + t + '」（空白が付いたままだとシートでは別の名前になります）');
+    }
+    return { value: t, fix: null };
+  }
+
+  // 取り込みの 1 セル。値は直さずそのまま使う（シートは完全一致で引くため、直すとシートと違う結果になる）。
+  // 例外は数値の列の「表示の書式」（カンマ・円記号）だけ。シートからコピーした数値は「1,500」の形で来るため。
+  function cleanCell(key, raw) {
+    const r0 = String(raw === undefined || raw === null ? '' : raw);
+    const kind = TAG_COLS[TAG_KEYS.indexOf(key)].kind;
+    if (kind === 'num') {
+      const t = trimAll(r0);
+      if (t === '') return { value: '', fix: null };
+      const s = t.replace(/[,¥￥]/g, '');
+      if (isNumText(s)) return { value: Number(s), fix: s !== t ? '数値の表示の書式（カンマ・円記号）を取って数値にしました: 「' + t + '」→ ' + Number(s) : null };
+      return { value: r0, fix: null };
+    }
+    return { value: r0, fix: null };
+  }
+
+  // 貼り付け／CSV の文字列から、タグ設定の行を作る
+  function parseTagPaste(text) {
+    const parsed = parseDelimited(text);
+    let rows = parsed.rows.filter((r) => !isBlankRow(r));
+    const result = { rows: [], fixes: [], notes: [], hadHeader: false, delimiter: parsed.delimiter, ignoredColumns: 0 };
+    if (rows.length === 0) return result;
+    const first = rows[0].map((c) => nfkc(trimAll(c)));
+    if (first[0] === 'タグ名' || first[1] === 'EP送料') { result.hadHeader = true; rows = rows.slice(1); }
+    let lineNo = 0;
+    rows.forEach((cells) => {
+      lineNo++;
+      if (cells.length > 20) result.ignoredColumns = Math.max(result.ignoredColumns, cells.length - 20);
+      const tag = emptyTag();
+      TAG_KEYS.forEach((k, idx) => {
+        if (k === 'O') return;
+        const c = cleanCell(k, cells[idx]);
+        tag[k] = c.value;
+        if (c.fix) result.fixes.push({ row: lineNo, tag: tag.A, col: k, head: TAG_COLS[idx].head, message: c.fix });
+      });
+      result.rows.push(tag);
+    });
+    if (result.ignoredColumns > 0) result.notes.push('21 列目以降（' + result.ignoredColumns + ' 列分）は読み込みませんでした（A〜T の 20 列だけを使います。W・X 列のタグ一覧は計算に使いません: 仕様書 3.3）。');
+    // 見出し行の有無・区切りの説明
+    result.notes.unshift((parsed.delimiter === '\t' ? 'タブ区切り' : 'カンマ区切り（CSV）') + 'として読みました。見出し行は' + (result.hadHeader ? 'ありました（読み飛ばしました）' : 'ありませんでした') + '。データは ' + result.rows.length + ' 行です。');
+    return result;
+  }
+
+  // 書き出し用の表（シートの TagShipping に A 列から貼り戻せる並び）。O 列は式（または値）。
+  function tagsToTable(rows, opts) {
+    opts = opts || {};
+    const withHeader = opts.header !== false;
+    const out = [];
+    if (withHeader) out.push(TAG_COLS.map((c) => c.head));
+    rows.forEach((t, i) => {
+      const sheetRow = i + (withHeader ? 2 : 1);
+      out.push(TAG_KEYS.map((k) => {
+        if (k === 'O') {
+          if (opts.oMode === 'value') { const o = derivedO(t); return o === '' ? '' : o; }
+          return '=IF(H' + sheetRow + '="","",IFERROR(VALUE(REGEXEXTRACT(H' + sheetRow + ',"\\$([0-9]+)")),""))';
+        }
+        const v = t[k];
+        return v === undefined || v === null ? '' : v;
+      }));
+    });
+    return out;
+  }
+
+  // ============================================================
+  // 2. 共通設定（仕様書 3.2。計算に使うセル）
+  // ============================================================
+  const SETTING_DEFS = [
+    { key: 'C2', label: '為替（円/ドル）', type: 'num', unit: '円', sec: '4.17', desc: '全ての円→ドル変換に使う実効為替です。シートでは更新のたびに自動で書き換わります。' },
+    { key: 'F1', label: '手数料率（共通）', type: 'pct', unit: '%', sec: '3.2・4.9', desc: 'eBay の手数料率。タグの手数料率が空のときの値で、想定関税の率（調整後関税率。シートのセル AF2）はいつもこの値から作られます。' },
+    { key: 'F2', label: '広告費率（共通）', type: 'pct', unit: '%', sec: '3.2・4.9', desc: '広告費率。タグの広告費率が空のときの値で、調整後関税率（AF2）もこの値から作られます。' },
+    { key: 'H1', label: '利益額（円。空ならシートの表 Profit_Amounts）', type: 'numBlank', unit: '円', sec: '3.2・4.6', desc: '「利益額」方式の行で使う固定の利益額。空欄なら Profit_Amounts の C 列を仕入れ値で引きます。' },
+    { key: 'H2', label: '利益率（共通）', type: 'pct', unit: '%', sec: '3.2・4.6', desc: 'タグの利益率が空のときの値。' },
+    { key: 'J1', label: '固定送料（円。空ならシートの表 Profit_Amounts）', type: 'numBlank', unit: '円', sec: '3.2・4.5', desc: '送料方法が「固定金額」の行で使う送料。空欄なら Profit_Amounts の D 列を仕入れ値で引きます。' },
+    { key: 'Z2', label: 'Payoneer 手数料率（受取手数料率）', type: 'pct', unit: '%', sec: '3.2・4.7', desc: '売上を受け取るときの手数料率。販売価格の式の分母に入ります。' },
+    { key: 'AA2', label: '実際の関税率', type: 'pct', unit: '%', sec: '3.2・4.9', desc: '想定関税・実際の関税額の元になる率。' },
+    { key: 'AB2', label: 'CE 通関手数料（円）', type: 'num', unit: '円', sec: '3.2・4.9', desc: '配送が CE のときだけ想定関税に加わります。' },
+    { key: 'AC2', label: 'EU 送料差額（円）', type: 'num', unit: '円', sec: '3.2・4.9', desc: '想定関税に（円÷為替で）加わる固定の差額。' },
+    { key: 'AE2', label: 'VAT 率', type: 'pct', unit: '%', sec: '3.2・4.9', desc: 'アメリカ向けだけを対象にした設定です。想定関税には「販売価格 × VAT 率 × 関税処理手数料率」の分だけ加わります（VAT 額そのものではありません）。0 ならこの項は 0 です。' },
+    { key: 'AG2', label: '関税処理手数料率', type: 'pct', unit: '%', sec: '3.2・4.9', desc: '関税と VAT の項に掛ける率。' },
+    { key: 'AH2', label: 'MPF（USD）', type: 'num', unit: 'USD', sec: '3.2・4.9', desc: '想定関税に加わる固定額（ドル）。' },
+    { key: 'AJ4', label: '送料切替基準（円。タグが空のときの値）', type: 'num', unit: '円', sec: '3.2・4.3', desc: '仕入れ値がこの額以上なら高価格配送、未満なら低価格配送。' },
+    { key: 'AQ2', label: '低価格配送（タグが空のときの値）', type: 'select', options: ['EP', 'CE', 'NONE'], sec: '3.2・4.3', desc: 'EP＝日本郵便エコノミー、CE＝Cpass エコノミー、NONE＝常に高価格配送。' },
+    { key: 'AQ3', label: '高価格配送（タグが空のときの値）', type: 'select', options: ['CF', 'CD', 'EL'], sec: '3.2・4.3', desc: 'CF＝Cpass FedEx、CD＝Cpass DHL、EL＝eLogistics。' },
+    { key: 'AP2', label: 'DDU 調整（ON/OFF）', type: 'select', options: ['ON', 'OFF'], sec: '3.2・4.10', desc: 'ON のとき、想定関税が閾値以上の行は「関税込み価格 − 閾値」を出品価格にします。' },
+    { key: 'AP3', label: '想定関税の閾値（USD。タグが空のときの値）', type: 'num', unit: 'USD', sec: '3.2・4.10', desc: 'タグの送料上限カテゴリに $ の数字が無い（汎用）ときに使う閾値。' },
+    { key: 'O1', label: '送料上限カテゴリ（タグが無いときの値）', type: 'select', options: CATEGORIES, sec: '3.2・4.12', desc: '未登録タグの行で、ポリシー選択に使うカテゴリ。' },
+    { key: 'O2', label: 'テンプレート名（タグが無いときの値）', type: 'text', sec: '3.2・4.13', desc: '未登録タグの行で使うテンプレート名（例: 一般汎用）。' },
+    { key: 'P2', label: '商品状態（タグが空・AI のときの値）', type: 'select', options: ['新品', '中古', 'AI'], sec: '3.2・4.2', desc: '「AI」のままだと商品状態が決まらず、ポリシーが「エラー」になります（9.1 K19）。' },
+    { key: 'AZ2', label: 'Zonos 固定手数料（USD。空なら 1.69）', type: 'numBlank', unit: 'USD', sec: '3.2・4.9', desc: '関税免除（DDP_TF）の行だけで使います。' },
+    { key: 'BA2', label: 'ラベル代（円。空なら 50）', type: 'numBlank', unit: '円', sec: '3.2・4.9', desc: '関税免除（DDP_TF）の行だけで使います。' },
+  ];
+  const SETTING_KEYS = SETTING_DEFS.map((d) => d.key);
+  const GLOBAL_PROFIT = ['RATE', 'AMOUNT'], GLOBAL_SHIP = ['TAG_SHIPPING', 'FIXED'];
+
+  function defaultSettings() {
+    return { S: JSON.parse(JSON.stringify(E.BASE_S)), profitCalc: 'RATE', shippingCalc: 'TAG_SHIPPING', profitAmounts: JSON.parse(JSON.stringify(E.PROFIT_AMOUNTS)) };
+  }
+  function settingsToJson(st) {
+    return JSON.stringify({ format: 'eagle-calc-settings', version: 1, S: st.S, profitCalc: st.profitCalc, shippingCalc: st.shippingCalc, profitAmounts: st.profitAmounts }, null, 2);
+  }
+  // JSON から設定を読む。{ settings, errors, notes }
+  function settingsFromJson(text) {
+    const res = { settings: null, errors: [], notes: [] };
+    let o;
+    try { o = JSON.parse(text); } catch (e) { res.errors.push('JSON として読めません: ' + e.message); return res; }
+    if (!o || typeof o !== 'object' || o.format !== 'eagle-calc-settings') { res.errors.push('このツールが書き出した設定ファイル（format が eagle-calc-settings）ではありません。'); return res; }
+    const st = defaultSettings();
+    const src = o.S || {};
+    SETTING_DEFS.forEach((d) => {
+      if (!(d.key in src)) { res.notes.push(d.key + ' が無いので初期値を使いました。'); return; }
+      const v = src[d.key];
+      if (d.type === 'num' || d.type === 'pct') {
+        if (typeof v === 'number' && isFinite(v)) st.S[d.key] = v; else res.errors.push(d.key + ' は数値が必要です（値: ' + JSON.stringify(v) + '）。');
+      } else if (d.type === 'numBlank') {
+        if (v === '' || v === null) st.S[d.key] = ''; else if (typeof v === 'number' && isFinite(v)) st.S[d.key] = v; else res.errors.push(d.key + ' は数値か空欄が必要です。');
+      } else if (d.type === 'select') {
+        if (d.options.indexOf(v) !== -1) st.S[d.key] = v; else res.errors.push(d.key + ' は ' + d.options.join(' / ') + ' のどれかが必要です（値: ' + JSON.stringify(v) + '）。');
+      } else st.S[d.key] = String(v === undefined || v === null ? '' : v);
+    });
+    if (GLOBAL_PROFIT.indexOf(o.profitCalc) !== -1) st.profitCalc = o.profitCalc; else res.errors.push('profitCalc は RATE か AMOUNT が必要です。');
+    if (GLOBAL_SHIP.indexOf(o.shippingCalc) !== -1) st.shippingCalc = o.shippingCalc; else res.errors.push('shippingCalc は TAG_SHIPPING か FIXED が必要です。');
+    if (Array.isArray(o.profitAmounts)) {
+      const pa = o.profitAmounts.map((r) => (Array.isArray(r) ? r.slice(0, 4) : null));
+      if (pa.some((r) => !r || r.length < 4)) res.errors.push('profitAmounts は [[下限,上限,利益額,送料],…] の形が必要です。'); else st.profitAmounts = pa;
+    } else res.errors.push('profitAmounts が配列ではありません。');
+    if (res.errors.length === 0) res.settings = st;
+    return res;
+  }
+  // 設定の簡単な食い違い検査（エラー・注意の文）
+  function checkSettings(st) {
+    const S = st.S, out = [];
+    if (!(S.C2 > 0)) out.push({ level: 'error', message: '為替 C2 が 0 以下です。ドルへの換算ができません。', basis: '3.2・4.17' });
+    if (1 - S.F1 - S.F2 - S.Z2 <= 0) out.push({ level: 'error', message: '手数料率＋広告費率＋Payoneer 手数料率が 100% 以上です。関税免除の行の想定関税が「#N/A」になります（販売価格の分母も 0 以下）。', basis: '4.9・7章 #14' });
+    if (S.P2 === 'AI') out.push({ level: 'warn', message: '商品状態の既定（P2）が「AI」です。タグの商品状態も「AI」か空欄の行は、商品状態が決まらずポリシーが「エラー」になります。', basis: '3.2・9.1 K19' });
+    if (st.profitAmounts.length === 0) out.push({ level: 'warn', message: 'Profit_Amounts の表が空です。利益額・固定送料の行は「#N/A」になります。', basis: '3.4' });
+    return out;
+  }
+  // Profit_Amounts の貼り付け（A〜D 列）
+  function parseProfitAmounts(text) {
+    const parsed = parseDelimited(text);
+    const rows = parsed.rows.filter((r) => !isBlankRow(r));
+    const res = { rows: [], errors: [], hadHeader: false };
+    let start = 0;
+    if (rows.length && !isNumText(nfkc(trimAll(rows[0][0] || '')).replace(/,/g, ''))) { res.hadHeader = true; start = 1; }
+    for (let i = start; i < rows.length; i++) {
+      const r = rows[i];
+      const num = (c) => { const s = nfkc(trimAll(c === undefined ? '' : c)).replace(/[,¥￥円]/g, ''); return s === '' ? '' : (isNumText(s) ? Number(s) : NaN); };
+      const rec = [num(r[0]), num(r[1]), num(r[2]), num(r[3])];
+      if (rec[0] === '' || rec.some((x) => typeof x === 'number' && isNaN(x))) { res.errors.push((i + 1 - start) + ' 行目を読めませんでした（A 列は数値、C・D 列は数値が必要）。'); continue; }
+      if (rec[2] < 0 || rec[3] < 0) { res.errors.push((i + 1 - start) + ' 行目の利益額（C 列）または送料（D 列）が負の値です。シートの検証（C・D 列は数値で 0 以上）で止まるため、この行は取り込みません（3.4）。'); continue; }
+      res.rows.push(rec);
+    }
+    for (let i = 1; i < res.rows.length; i++) if (!(res.rows[i][0] > res.rows[i - 1][0])) { res.errors.push('A 列（仕入れ下限）が昇順になっていません（' + (i + 1) + ' 行目）。シートでは検証エラーになります（3.4）。'); break; }
+    return res;
+  }
+
+  // ============================================================
+  // 3. ポリシー・テンプレートの一覧（仕様書 3.6〜3.8）
+  // ============================================================
+  const num0 = (c) => { const s = nfkc(trimAll(c === undefined ? '' : c)).replace(/,/g, ''); return isNumText(s) ? Number(s) : null; };
+  // Import_Policies の A〜G の貼り付け。式が読むのは 2〜500 行目（499 行）だけ（3.6）
+  function parseImportPolicies(text) {
+    const parsed = parseDelimited(text);
+    let rows = parsed.rows.filter((r) => !isBlankRow(r));
+    const res = { rows: [], notes: [], errors: [] };
+    if (rows.length && num0(rows[0][0]) === null) rows = rows.slice(1);   // 見出し行
+    if (rows.length > 499) { res.notes.push('式が読むのは Import_Policies の 2〜500 行目（499 行）までなので、先頭の 499 行だけ使います（3.6）。'); rows = rows.slice(0, 499); }
+    rows.forEach((r, i) => {
+      const id = num0(r[0]);
+      const name = trimAll(r[1] === undefined ? '' : r[1]);
+      if (id === null || name === '') { res.errors.push((i + 1) + ' 行目: ポリシーID（数値）かポリシー名が読めませんでした。'); return; }
+      const cRaw = trimAll(r[2] === undefined ? '' : r[2]);
+      const cNum = num0(r[2]);
+      const type = trimAll(r[3] === undefined ? '' : r[3]);
+      const cond = trimAll(r[4] === undefined ? '' : r[4]);
+      const mn = num0(r[5]), mx = num0(r[6]);
+      if (type && (mn === null || mx === null)) { res.errors.push((i + 1) + ' 行目（' + name + '）: 配送タイプがあるのに下限・上限（F・G 列）が数値ではありません。'); return; }
+      res.rows.push([id, name, cNum !== null ? cNum : cRaw, type, cond, mn === null ? '' : mn, mx === null ? '' : mx]);
+    });
+    return res;
+  }
+  // Policy_Master の貼り付け。式が読むのは B 列（名前）と A 列（ID）
+  function parsePolicyMaster(text) {
+    const parsed = parseDelimited(text);
+    const list = [];
+    parsed.rows.forEach((r) => {
+      const a = trimAll(r[0] === undefined ? '' : r[0]), b = trimAll(r[1] === undefined ? '' : r[1]);
+      if (a === '' || b === '') return;
+      const n = num0(a);
+      list.push({ id: n !== null ? n : a, name: b });
+    });
+    return list;
+  }
+  // Import_Templates の A〜C の貼り付け。式が読むのは 2〜50 行目（49 行）（4.13）
+  function parseTemplates(text) {
+    const parsed = parseDelimited(text);
+    let rows = parsed.rows.filter((r) => !isBlankRow(r));
+    const res = { rows: [], notes: [] };
+    if (rows.length && num0(rows[0][0]) === null && nfkc(trimAll(rows[0][0])) !== '') rows = rows.slice(1);
+    if (rows.length > 49) { res.notes.push('式が読むのは Import_Templates の 2〜50 行目（49 行）までなので、先頭の 49 行だけ使います（4.13）。'); rows = rows.slice(0, 49); }
+    rows.forEach((r) => {
+      const a = trimAll(r[0] === undefined ? '' : r[0]);
+      const c = trimAll((r.length >= 3 ? r[2] : r[1]) === undefined ? '' : (r.length >= 3 ? r[2] : r[1]));
+      if (a === '' || c === '' || c.indexOf('⚠') !== -1) return;
+      const n = num0(a);
+      res.rows.push({ A: n !== null ? n : a, C: c });
+    });
+    return res;
+  }
+  // 帯の一覧（配送タイプ・状態ごと）
+  function bandTable(importPolicies) {
+    const groups = [];
+    ['eco', 'xp'].forEach((t) => ['new', 'used'].forEach((c) => {
+      const rows = importPolicies.filter((r) => r[3] === t && r[4] === c).sort((a, b) => a[5] - b[5]);
+      if (rows.length) groups.push({ type: t, cond: c, rows });
+    }));
+    const manual = importPolicies.filter((r) => !r[3]);
+    return { groups, manual };
+  }
+  function policyNameOf(state, id) {
+    if (id === '' || id === undefined || typeof id !== 'number' && typeof id !== 'string') return '';
+    const m = state.policyMasterB.find((p) => String(p.id) === String(id));
+    if (m) return m.name;
+    const r = state.importPolicies.find((p) => String(p[0]) === String(id));
+    return r ? r[1] : '';
+  }
+  function templateNameOf(state, id) {
+    const t = state.templates.find((x) => String(x.A) === String(id));
+    return t ? t.C : '';
+  }
+
+  // ============================================================
+  // 4. 状態 → 計算用の文脈（ctx）。計算の包み
+  // ============================================================
+  // state: { tags:[行], settings:{S,profitCalc,shippingCalc,profitAmounts}, templates, importPolicies, policyMasterB }
+  function tagMap(rows) {
+    const m = Object.create(null);
+    rows.forEach((t) => { if (t.A !== '' && !(t.A in m)) m[t.A] = t; });   // 同じ名前は最初の行だけ（シートの検索の動き）
+    return m;
+  }
+  function buildCtx(state) {
+    return {
+      S: state.settings.S, tags: tagMap(state.tags), profitCalc: state.settings.profitCalc, shippingCalc: state.settings.shippingCalc,
+      profitAmounts: state.settings.profitAmounts, templates: state.templates, policyMasterB: state.policyMasterB, importPolicies: state.importPolicies,
+    };
+  }
+  // 仕入れ値の文字 → 数値／''（空）／NaN（数値でない）
+  function parseCost(raw) {
+    const s = trimAll(raw === undefined || raw === null ? '' : raw).replace(/[,¥￥円]/g, '');
+    if (s === '') return '';
+    return isNumText(s) ? Number(s) : NaN;
+  }
+  const UNKNOWN_NOTE = 'タグの送料セルが空欄です。シートでこの結果がどうなるかは実機で未確認です（仕様書 3.3・7章 #3）。';
+  function calcRow(ctx, D, I) {
+    const out = E.calcSheetRow(ctx, { D, I });
+    if (D !== '' && I !== '' && out.AS === '') {
+      out.unknown = UNKNOWN_NOTE;
+      ['R', 'U', 'AD', 'AH', 'S', 'AG', 'O', 'listing'].forEach((k) => { out[k] = new SheetError('(未確認)', UNKNOWN_NOTE); });
+    }
+    return out;
+  }
+
+  // ============================================================
+  // 5. 入力チェック（取り込み時・編集時）
+  // ============================================================
+  const hasPct = (v) => E.percentCell(v) !== null;
+  function possibleMethods(tag, S, shippingCalc) {       // 低価格・高価格のどちらが使われ得るか
+    const low = (tag.L !== '' ? tag.L : S.AQ2), high = (tag.M !== '' ? tag.M : S.AQ3);
+    if (shippingCalc === 'FIXED') { const l = S.AQ2, h = S.AQ3; return l === 'NONE' ? [h] : [l, h]; }
+    return low === 'NONE' ? [high] : [low, high];
+  }
+  function validateTags(rows, state) {
+    const S = state.settings.S, shippingCalc = state.settings.shippingCalc, profitCalc = state.settings.profitCalc;
+    const issues = [];
+    const add = (level, i, col, message, basis) => { const it = { level, row: i + 1, tag: rows[i] ? rows[i].A : '', col, message, basis }; issues.push(it); return it; };
+    const fixedAll = shippingCalc === 'FIXED';
+    const unusedNote = fixedAll ? '全体の送料計算が「固定金額」なので、今は計算に使われませんが、' : '';
+    const tplC = state.templates.map((t) => String(t.C).toLowerCase());
+    const pmNames = state.policyMasterB.map((p) => String(p.name).toLowerCase());
+    const seen = Object.create(null);
+    let anyTF = false;
+    rows.forEach((t, i) => {
+      // --- タグ名
+      if (t.A === '') add('warn', i, 'A', 'タグ名が空欄です。タグ名は検索の鍵（完全一致）なので、この行は計算に使われません（シートの計算は壊れません）。', '3.3・4.1');
+      else {
+        if (t.A in seen) add('warn', i, 'A', 'タグ名「' + t.A + '」が ' + seen[t.A] + ' 行目にもあります。シートの検索（完全一致）は最初の行だけを使うので、この行の設定は使われません。', '3.3・4.1');
+        else seen[t.A] = i + 1;
+        if (t.A !== trimAll(t.A)) add('warn', i, 'A', 'タグ名の前後に空白があります。シートは完全一致で引くので、空白の無いタグ名とは別物になります（作業シートの D 列に同じ空白が無いと見つかりません）。', '4.1（U:1406-1445 のコード側は空白を取るが、式は完全一致）');
+      }
+      const tfm = TF_TAG.test(String(t.R).trim().toUpperCase());
+      if (tfm) anyTF = true;
+      const methods = possibleMethods(t, S, shippingCalc);
+      const fixedShip = t.T === METHOD.SHIPPING_FIXED;
+      // --- 選択肢の列
+      if (t.L !== '' && CHOICES.L.indexOf(t.L) === -1) {
+        if (TAG_COL[t.L]) add('warn', i, 'L', unusedNote + '低価格配送「' + t.L + '」はシートの選択肢（EP / CE / NONE）にありません。計算はできますが、意図した値か確かめてください。', '3.3・4.3');
+        else add(fixedAll ? 'warn' : 'error', i, 'L', unusedNote + '低価格配送「' + t.L + '」は送料の列（B/C/D）に対応しない値です。配送方法がこの値になった行は、送料が「#タグ未登録」になり、販売価格以降がエラーになります。選択肢は EP / CE / NONE です（空白や全角が混じっていないか確かめてください）。', '3.3・4.5・7章 #5・9.1 K9');
+      }
+      if (t.M !== '' && CHOICES.M.indexOf(t.M) === -1) {
+        if (TAG_COL[t.M]) add('warn', i, 'M', unusedNote + '高価格配送「' + t.M + '」はシートの選択肢（CF / CD / EL）にありません。計算はできますが、意図した値か確かめてください。', '3.3・4.3');
+        else add(fixedAll ? 'warn' : 'error', i, 'M', unusedNote + '高価格配送「' + t.M + '」は送料の列（B/C/D）に対応しない値です（NONE は低価格配送だけに使えます）。この配送になった行は、送料が「#タグ未登録」になり、販売価格以降がエラーになります。選択肢は CF / CD / EL です（空白や全角が混じっていないか確かめてください）。', '3.3・4.5・7章 #5・9.1 K9');
+      }
+      if (t.P !== '' && CHOICES.P.indexOf(t.P) === -1) add('error', i, 'P', '商品状態「' + t.P + '」は 新品 / 中古 / AI のどれでもありません（空白や全角が混じっていないか確かめてください）。商品状態がこの文字になり、ポリシー（O）は「エラー」、テンプレート（E）は中古として引かれます。', '4.2・7章 #7');
+      const AEv = (t.P === '' || t.P === 'AI') ? S.P2 : t.P;
+      if ((t.P === '' || t.P === 'AI') && S.P2 !== '新品' && S.P2 !== '中古') add('warn', i, 'P', '商品状態が「' + (t.P || '空欄') + '」で、共通設定 P2 も「' + S.P2 + '」のため、商品状態が決まりません。ポリシー（O）は「エラー」、テンプレート（E）は中古として引かれます。', '4.2・9.1 K19');
+      const Rt = String(t.R).trim().toUpperCase();
+      if (Rt !== '' && Rt !== 'DDP' && Rt !== 'DDU' && !tfm) {
+        if (nfkc(Rt) !== Rt && /^(DDP|DDU|DDP_TF_\d{4})$/.test(nfkc(Rt))) add('warn', i, 'R', 'DDP/DDU設定「' + t.R + '」は全角の文字を含みます。シートの式は大文字化と前後の空白除去しかしないので、DDP・DDU・免除として認識されず、DDU 扱いになります。', '3.3・4.4');
+        else if (/^DDP_TF_/.test(Rt)) add('warn', i, 'R', 'DDP/DDU設定「' + t.R + '」は、DDP_TF_ のあとが 4 桁の数字ではないため、免除指定として扱われません。DDU として計算されます。', '4.4（境界）');
+        else add('warn', i, 'R', 'DDP/DDU設定「' + t.R + '」は DDP / DDU / DDP_TF_<4桁> のどれでもありません。DDU として計算されます。', '3.3・4.4');
+      }
+      if (t.S !== '' && CHOICES.S.indexOf(t.S) === -1) add('error', i, 'S', '利益方法「' + t.S + '」は許可された 2 値（「タグ別利益率」「利益額（Profit_Amounts参照）」。全角カッコ）のどちらでもありません（半角カッコ・空白・全角半角の違いも別の値です）。V5 の初期設定が「[V5検証エラー]」で中断し（初期設定が止まります）、式が出力されなくなります。', '3.3・7章 #4（U:1757-1779）');
+      if (t.T !== '' && CHOICES.T.indexOf(t.T) === -1) add('error', i, 'T', '送料方法「' + t.T + '」は許可された 2 値（「タグ別送料」「固定金額（Profit_Amounts参照）」。全角カッコ）のどちらでもありません（半角カッコ・空白・全角半角の違いも別の値です）。V5 の初期設定が「[V5検証エラー]」で中断し（初期設定が止まります）、式が出力されなくなります。', '3.3・7章 #4（U:1757-1779）');
+      // --- 送料上限カテゴリ
+      if (t.H === '') add('warn', i, 'H', '送料上限カテゴリが空欄です。ポリシー（O）が空になります。', '4.12・7章 #3');
+      else if (CATEGORIES.indexOf(t.H) === -1) add('warn', i, 'H', '送料上限カテゴリ「' + t.H + '」はシートの選択肢にありません。シートでは選択肢と一致しないため、ポリシー選択では「上限なし」として扱われます（半角カッコ「(」や空白の違いが原因のことがあります。閾値だけは $ の後ろの数字から作られるので、ずれることがあります）。', '3.3・5.1');
+      // --- 数値の列
+      ['B', 'C', 'D'].forEach((k) => {
+        const colName = { B: 'EP', C: 'CE', D: 'CF/CD/EL' }[k];
+        const used = !fixedShip && methods.some((m) => TAG_COL[m] === k);
+        const v = t[k];
+        if (v !== '' && typeof v !== 'number') add(used ? 'error' : 'warn', i, k, TAG_COLS[TAG_KEYS.indexOf(k)].head + '「' + v + '」は数値ではありません。' + (used ? '送料を使った足し算などの計算がエラーになり、販売価格以降がエラーになります。' : 'この列は今の設定では使われませんが、直しておいてください。'), '3.3・4.5');
+        else if (v === '' && used) add('warn', i, k, TAG_COLS[TAG_KEYS.indexOf(k)].head + 'が空欄ですが、この配送方法（' + colName + '）が使われ得ます。空欄のときシートの結果がどうなるかは実機で未確認です（このツールは「未確認」と表示します）。', '3.3・7章 #3・9.3 #9');
+      });
+      if (t.N !== '' && typeof t.N !== 'number') add('warn', i, 'N', unusedNote + '送料切替基準「' + t.N + '」は数値ではありません。「仕入れ値 ≧ 基準」の比較結果がシートで未確認です。', '3.3・4.3');
+      // --- 率
+      ['I', 'J', 'K'].forEach((k) => {
+        const v = t[k];
+        if (v === '') return;
+        if (!hasPct(v)) { add('warn', i, k, RATE_LABEL[k] + '「' + v + '」は率として読めません。共通設定の値に倒れる想定です（シートの式は、率として読めないとき共通設定の値を使う作りです）。', '3.3・7章 #3・9.3 #9'); return; }
+        const n = Number(String(v).replace(/%/g, ''));
+        const [lo, hi] = RATE_RANGE[k];
+        if (n < lo || n > hi || Math.floor(n) !== n) add('warn', i, k, RATE_LABEL[k] + '「' + v + '」はシートの選択肢（' + lo + '%〜' + hi + '% の 1% 刻み）の範囲外です。計算はできますが、「18」のつもりで「0.18」と書くと 0.18% として読まれます（式は 100 で割ります）。', '3.3（P3:4089-4114）');
+      });
+      // --- 率の合計（価格が出ない）
+      const V = hasPct(t.K) ? E.percentCell(t.K) : S.F1;
+      const ad = hasPct(t.J) ? E.percentCell(t.J) : S.F2;
+      const byAmount = profitCalc === 'AMOUNT' || t.S === METHOD.PROFIT_AMOUNT;
+      const AQ = byAmount ? 0 : (hasPct(t.I) ? E.percentCell(t.I) : S.H2);
+      const sum = V + ad + S.Z2 + AQ;
+      if (sum >= 1 - 1e-12) add('error', i, 'K', '手数料率 ' + (V * 100).toFixed(2).replace(/\.?0+$/, '') + '% ＋ 広告費率 ' + (ad * 100).toFixed(2).replace(/\.?0+$/, '') + '% ＋ 受取手数料率（Payoneer）' + (S.Z2 * 100).toFixed(2).replace(/\.?0+$/, '') + '%' + (byAmount ? '' : ' ＋ 利益率 ' + (AQ * 100).toFixed(2).replace(/\.?0+$/, '') + '%') + ' の合計が 100% 以上です。販売価格の式の分母が 0 以下になり、価格が出ません（式にガードはありません）。', '4.7・7章 #19');
+      // --- SKU 略称
+      if (t.F === '') add('warn', i, 'F', 'SKU略称が空欄です。このタグの行には SKU（C 列）が書かれません。', '3.3・4.16');
+      else if (!/^[A-Za-z0-9]+$/.test(t.F)) add('warn', i, 'F', 'SKU略称「' + t.F + '」は半角英数字だけではありません。警告が出て、このタグの行には SKU が書かれません。', '3.3・4.16（U:2021-2037）');
+      else if (/\d$/.test(t.F)) add('warn', i, 'F', 'SKU略称「' + t.F + '」の末尾が数字です。既存 SKU を読む正規表現の切れ目（日付との境）の解釈が揺れ得ます【未確認】。', '4.16・9.3 #6');
+      // --- テンプレート
+      if (t.G === '') add('warn', i, 'G', 'テンプレート名が空欄です。テンプレートID（E）が空になります。', '4.13・7章 #3');
+      else if (t.G !== trimAll(t.G)) add('warn', i, 'G', 'テンプレート名「' + t.G + '」の前後に空白があります。シートは Template_<名>_… の標準名と完全一致で探すので、一致せず、テンプレートID（E）は「該当なし」になります。', '4.13（式は Import_Templates の標準名と完全一致）');
+      else {
+        const anyG = tplC.some((c) => c.indexOf(('Template_' + t.G + '_').toLowerCase()) === 0);
+        if (!anyG) add('warn', i, 'G', 'テンプレート名「' + t.G + '」が (D) のテンプレート一覧（標準名 Template_' + t.G + '_new|used_eco|xp）にありません。テンプレートID（E）は「該当なし」になります。', '4.13（式は Import_Templates の標準名と完全一致）');
+        else {
+          const conds = [AEv === '新品' ? 'new' : 'used'];
+          const types = Array.from(new Set(methods.map((m) => ((m === 'EP' || m === 'CE') ? 'eco' : 'xp'))));
+          const miss = [];
+          conds.forEach((c) => types.forEach((ty) => { const nm = 'Template_' + t.G + '_' + c + '_' + ty; if (tplC.indexOf(nm.toLowerCase()) === -1) miss.push(nm); }));
+          if (miss.length) add('warn', i, 'G', 'このタグが使い得る組み合わせのテンプレート標準名が (D) の一覧にありません: ' + miss.join('、') + '。その配送・状態の行はテンプレートID（E）が「該当なし」になります。', '4.13');
+        }
+      }
+      // --- DDP・免除
+      if (Rt === 'DDP' || tfm) {
+        const types = Array.from(new Set(methods.map((m) => ((m === 'EP' || m === 'CE') ? 'eco' : ((m === 'CF' || m === 'CD' || m === 'EL' || m === 'EMS') ? 'xp' : '')))));
+        if (Rt === 'DDP') {
+          const cond = AEv === '新品' ? 'new' : (AEv === '中古' ? 'used' : '');
+          const miss = types.filter((ty) => pmNames.every((n) => !n.endsWith((ty + '_' + cond + '_free').toLowerCase()))).map((ty) => ty + '_' + cond + '_free');
+          if (miss.length) add('warn', i, 'R', 'DDP の行に使うポリシー（名前の末尾が ' + miss.join('・') + '）が (D) の一覧にありません。ポリシー（O）は「該当なし」になります。', '4.12・7章 #12');
+        } else {
+          const band = Rt.slice(-4);
+          if (pmNames.every((n) => !n.endsWith('eco_used_taxfree_' + band))) add('warn', i, 'R', '免除ポリシー（名前の末尾が eco_used_taxfree_' + band + '）が (D) の一覧にありません。免除の行のポリシー（O）は「該当なし」になります（DDU には落ちません）。', '4.12・7章 #12');
+          const low = shippingCalc === 'FIXED' ? S.AQ2 : (t.L !== '' ? t.L : S.AQ2);
+          if (AEv !== '中古' || low !== 'EP') add('warn', i, 'R', '免除は「配送が EP かつ商品状態が中古」の行だけです。このタグは' + (AEv !== '中古' ? '商品状態が中古ではない' : '低価格配送が EP ではない') + 'ため、免除になる行がありません（普通の DDU として計算されます）。', '4.4・6章');
+        }
+      }
+      // --- 「この値を直す」の案を、該当する指摘に付ける（人が押したときだけ直す）
+      STORED_KEYS.forEach((k) => {
+        const kind = TAG_COLS[TAG_KEYS.indexOf(k)].kind;
+        const raw = t[k];
+        if (k === 'A' || typeof raw !== 'string' || raw === '') return;
+        const sg = suggestCell(k, raw).value;
+        if (sg === raw) return;
+        let it = null;
+        for (let n = issues.length - 1; n >= 0 && issues[n].row === i + 1; n--) if (issues[n].col === k) { it = issues[n]; break; }
+        if (!it && (k === 'E' || k === 'Q')) it = add('warn', i, k, TAG_COLS[TAG_KEYS.indexOf(k)].head + '「' + raw + '」の前後に空白があります。シートでは空白の無い値とは別の値です。', '3.3');
+        if (it) it.fix = { row: i, col: k, value: sg };
+      });
+    });
+    if (anyTF) issues.push({ level: 'warn', row: 0, tag: '', col: 'R', message: '免除（DDP_TF_）を使うには、シートの「初期設定」を再保存して免除用の式（AY 列など）を出力する必要があります（ゲートは再出力まで有効になりません）。このツールは常に有効として計算します。', basis: '4.4・7章 #26（HO:30）' });
+    return issues;
+  }
+  // 件数まとめ
+  function countIssues(issues) {
+    return { error: issues.filter((x) => x.level === 'error').length, warn: issues.filter((x) => x.level === 'warn').length };
+  }
+  // 見本のタグ設定（calc-examples.js と同じ TAGS）。SKU略称だけ、見本のために足す
+  function sampleTags() {
+    const abbr = { 'サンプルA': 'SMPA', 'サンプルB': 'SMPB', 'サンプルC': 'SMPC', 'サンプルD': 'SMPD', 'サンプルE': 'SMPE', 'サンプルF': 'SMPF' };
+    return Object.keys(E.TAGS).map((name) => {
+      const t = emptyTag();
+      Object.keys(E.TAGS[name]).forEach((k) => { t[k] = E.TAGS[name][k]; });
+      t.A = name; t.F = abbr[name] || '';
+      return t;
+    });
+  }
+
+  // ============================================================
+  // 6. まとめて計算の入力
+  // ============================================================
+  // 入力: 「タグ」と「仕入れ値」をタブで区切った 2 列＋任意の列（3=仕入先, 4=仕入先コード, 5=title, 6=コンディション説明）。タブ区切り（タブが無ければ最後のカンマで 2 列に分ける）
+  function parseBatch(text) {
+    const lines = String(text).replace(/\r\n?/g, '\n').split('\n').filter((l) => trimAll(l) !== '');
+    const rows = [];
+    lines.forEach((line, idx) => {
+      let parts;
+      if (line.indexOf('\t') !== -1) parts = line.split('\t');
+      else { const p = line.lastIndexOf(','); parts = p === -1 ? [line, ''] : [line.slice(0, p), line.slice(p + 1)]; }
+      const tag = parts[0];
+      const costRaw = parts.length > 1 ? parts[1] : '';
+      if (idx === 0 && /^(タグ|タグ名|D)$/.test(nfkc(trimAll(tag))) && isNaN(parseCost(costRaw))) return;   // 見出し行
+      rows.push({ line: idx + 1, D: tag, costRaw, I: parseCost(costRaw), supplier: trimAll(parts[2] || ''), supplierCode: trimAll(parts[3] || ''), title: parts[4] || '', condDesc: parts[5] || '', label: '', from: 'batch' });
+    });
+    return rows;
+  }
+  // 「v5インポート」シートの行（A〜O 列。P 列以降の Item Specifics は読まない）。2 行目が見出し・3 行目からデータ（U:402-443, U:455-475）
+  const V5_COLS = [
+    { key: 'A', head: '日付' }, { key: 'B', head: '担当' }, { key: 'C', head: 'label' }, { key: 'D', head: 'タグ' }, { key: 'E', head: 'テンプレート' },
+    { key: 'F', head: 'カテゴリーID' }, { key: 'G', head: '仕入れ先' }, { key: 'H', head: '仕入れ先コード' }, { key: 'I', head: '仕入れ価格' },
+    { key: 'J', head: '日本語title' }, { key: 'K', head: '商品説明' }, { key: 'L', head: 'セラーID' }, { key: 'M', head: 'Title' },
+    { key: 'N', head: 'Condition/DIscription' }, { key: 'O', head: 'シッピングポリシー' },
+  ];
+  // 日付（A 列）の読み方はシートと同じ: 空でなければ日付に変換し、変換できない・空なら呼び出し側の日付（画面の日付）。U:2118-2127
+  function parseSheetDate(raw) {
+    const t = trimAll(raw === undefined || raw === null ? '' : raw);
+    if (t === '') return null;
+    const m = /^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/.exec(t);
+    if (m) { const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])); return isNaN(d.getTime()) ? null : d; }
+    const d2 = new Date(t);
+    return isNaN(d2.getTime()) ? null : d2;
+  }
+  function parseV5Import(text) {
+    const parsed = parseDelimited(text, '\t');
+    const res = { items: [], notes: [], skipped: 0, hadHeader: false };
+    let rows = parsed.rows.filter((r) => !isBlankRow(r));
+    while (rows.length && (nfkc(trimAll(rows[0][3] || '')) === 'タグ' || nfkc(trimAll(rows[0][7] || '')) === '仕入れ先コード' || nfkc(trimAll(rows[0][0] || '')) === '日付')) { res.hadHeader = true; rows = rows.slice(1); }
+    rows.forEach((c, idx) => {
+      const g = (i) => (c[i] === undefined ? '' : String(c[i]));
+      if (trimAll(g(3)) === '' && trimAll(g(7)) === '' && trimAll(g(8)) === '') { res.skipped++; return; }
+      res.items.push({ line: idx + 1, D: g(3), costRaw: g(8), I: parseCost(g(8)), supplier: trimAll(g(6)), supplierCode: trimAll(g(7)), title: g(12), condDesc: g(13), label: trimAll(g(2)), date: parseSheetDate(g(0)), v5: { E: trimAll(g(4)), O: trimAll(g(14)), F: trimAll(g(5)) }, from: 'v5' });
+    });
+    if (c_extra(parsed.rows)) res.notes.push('16 列目（P 列）以降の Item Specifics は読み込みません（EAGLE の通常版の一括登録には入りません）。');
+    return res;
+  }
+  function c_extra(rows) { return rows.some((r) => r.length > 15 && trimAll(r.slice(15).join('')) !== ''); }
+  // 1行ぶんの「結果の表示用」の値
+  function show(v) {
+    if (v === undefined || v === null) return '';
+    if (isErr(v)) return v.code;
+    if (typeof v === 'number') return String(Math.round(v * 1e9) / 1e9);
+    return String(v);
+  }
+  function batchCompute(state, rows, date) {
+    const ctx = buildCtx(state);
+    const seq = {};
+    const map = ctx.tags;
+    return rows.map((r) => {
+      const res = { in: r, out: null, sku: '', skuNote: '', memo: [] };
+      if (r.D === '') { res.memo.push('タグが空です。シートでは多くの列が空になります（7章 #1）。'); }
+      if (Number.isNaN(r.I)) { res.memo.push('仕入れ値「' + r.costRaw + '」が数値ではありません。計算しません。'); return res; }
+      res.out = calcRow(ctx, r.D, r.I);
+      const tag = r.D in map ? map[r.D] : null;
+      res.tag = tag;
+      res.memo = res.memo.concat(outcomeNotes(state, ctx, res.out, r.D, r.I).map((x) => x.col + ': ' + x.reason));
+      if (tag && /^[A-Za-z0-9]+$/.test(tag.F)) { res.sku = E.makeSku(tag.F, r.date || date, seq); } else if (r.D !== '') res.skuNote = tag ? 'SKU略称が無い／半角英数字でない' : 'タグ未登録';
+      return res;
+    });
+  }
+
+  // ---- EAGLE 一括登録（通常版・参考ID指定）の形で書き出す。13 列。* は EAGLE 側で任意の項目（eagle-ui-notes.md、2026-11-17 に画面で確認）
+  const EAGLE_HEADS = ['*タグ', '出品テンプレートid', '参考EbayID', '仕入先', '仕入先コード', '価格', '*title', '*custom_label', '*offer了承金額', '*offer拒否金額', '*private_listing', '*コンディション説明', '*シッピングポリシー'];
+  // 各列をどこから作るか（画面に出す対応表）
+  const EAGLE_MAP = [
+    { head: '*タグ', from: '計算した行のタグ（(C) の入力／v5インポート D 列）', calc: '入力', sec: '3.1' },
+    { head: '出品テンプレートid', from: 'テンプレートID（作業シート E 列の値）', calc: '計算', sec: '4.13' },
+    { head: '参考EbayID', from: 'タグ設定の「参考eBay ID」（TagShipping E 列）。カテゴリーID 指定版は未対応', calc: '取り込み', sec: '3.3・3.1 F 列' },
+    { head: '仕入先', from: '入力の任意列／v5インポート G 列（仕入れ先）。無ければ空欄', calc: '持ち回し', sec: '3.1・U:402-443' },
+    { head: '仕入先コード', from: '入力の任意列／v5インポート H 列（仕入れ先コード）。無ければ空欄', calc: '持ち回し', sec: '3.1・U:402-443' },
+    { head: '価格', from: '出品価格（AG が数値なら AG、なければ DDP なら S、それ以外 R）', calc: '計算', sec: '4.14' },
+    { head: '*title', from: '入力の任意列／v5インポート M 列（Title）。無ければ空欄', calc: '持ち回し', sec: '3.1・U:402-443' },
+    { head: '*custom_label', from: 'SKU（作業シート C 列の採番と同じ規則。日付は v5インポート A 列、読めなければ画面の日付）。略称が無いときは v5インポート C 列（label）があればそれ', calc: '計算', sec: '4.16' },
+    { head: '*offer了承金額', from: '空欄（価格計算の対象外。EAGLE のテンプレートの設定が使われる）', calc: '空欄', sec: '-' },
+    { head: '*offer拒否金額', from: '空欄（同上）', calc: '空欄', sec: '-' },
+    { head: '*private_listing', from: '空欄（同上）', calc: '空欄', sec: '-' },
+    { head: '*コンディション説明', from: '入力の任意列／v5インポート N 列（Condition/DIscription）。無ければ空欄', calc: '持ち回し', sec: '3.1・U:402-443' },
+    { head: '*シッピングポリシー', from: 'シッピングポリシー（作業シート O 列の値。ID）', calc: '計算', sec: '4.12' },
+  ];
+  const isIdLike = (v) => (typeof v === 'number') || (typeof v === 'string' && /^\d+$/.test(v));
+  function eagleExport(state, results, opts) {
+    opts = opts || {};
+    const rows = [], skipped = [], warnings = [];
+    results.forEach((r) => {
+      if (!r.out) { skipped.push({ line: r.in.line, tag: r.in.D, reason: '仕入れ値が数値でないため計算していません' }); return; }
+      const price = r.out.listing;
+      if (typeof price !== 'number') { skipped.push({ line: r.in.line, tag: r.in.D, reason: '出品価格が決まりません（' + (show(price) || '空') + '）' }); return; }
+      const tag = r.tag;
+      const label = r.sku || r.in.label || '';
+      const w = (m) => warnings.push({ line: r.in.line, tag: r.in.D, message: m });
+      if (!isIdLike(r.out.E)) w('出品テンプレートid が決まりません（' + (show(r.out.E) || '空') + '）。EAGLE では必須の列です');
+      if (!isIdLike(r.out.O)) w('シッピングポリシー が決まりません（' + (show(r.out.O) || '空') + '）');
+      if (!(r.in.supplier || '')) w('仕入先 が空です（EAGLE では必須の列です）');
+      if (!(r.in.supplierCode || '')) w('仕入先コード が空です（EAGLE では必須の列です）');
+      if (!tag || tag.E === '' || tag.E === undefined) w('参考EbayID が空です（EAGLE の通常版の一括登録で * が付かない＝必須の列です）');
+      rows.push([r.in.D, isIdLike(r.out.E) ? r.out.E : '', tag ? tag.E : '', r.in.supplier || '', r.in.supplierCode || '', price, r.in.title || '', label, '', '', '', r.in.condDesc || '', isIdLike(r.out.O) ? r.out.O : '']);
+    });
+    const table = (opts.header ? [EAGLE_HEADS.slice()] : []).concat(rows);
+    return { table, skipped, warnings, count: rows.length };
+  }
+
+  // ============================================================
+  // 7. シートで何が表示されるか（エラー・空欄の説明）
+  // ============================================================
+  function outcomeNotes(state, ctx, out, D, I) {
+    const notes = [];
+    const n = (col, shown, reason, sec) => notes.push({ col, shown, reason: reason + '（' + sec + '）' });
+    if (D === '') { n('全般', '多くの列が空', 'D 列（タグ）が空だと、AE・X・E・O・AQ・AR・AS は空になります。R は I が空かどうかだけを見ます', '7章 #1'); return notes; }
+    if (I === '') { n('R・T・U など', '空', '仕入れ値 I が空なので、販売価格 R・送料 T・利益 U などは空です', '7章 #15'); return notes; }
+    if (out.unknown) n('R・U・AD・AH・S・AG・O・出品価格', '(未確認)', out.unknown, '3.3・7章 #3');
+    if (out.tag === '(未登録)') n('AS（送料）', '#タグ未登録', 'タグが TagShipping に無いので、送料は文字「#タグ未登録」になり、足し算などの計算がエラーになる想定です。AE・X・V・広告費率・AQ・AX・O 用カテゴリ・E 用テンプレは共通設定の値に倒れます', '7章 #2');
+    else if (out.AS === '#タグ未登録') n('AS（送料）', '#タグ未登録', '配送方法 ' + out.X + ' は送料の列（EP/CE/CF/CD/EL）に無いため、タグが登録されていても「#タグ未登録」になります', '4.5・7章 #5');
+    else if (out.AS === '#配送方法未設定') n('AS（送料）', '#配送方法未設定', '配送方法 X が空です', '7章 #6');
+    if (isErr(out.AS)) n('AS（送料）', out.AS.code, '仕入れ値が Profit_Amounts の先頭の下限より小さいなどで、表引きが「#N/A」になります（意図的な出品停止の合図）', '3.4・7章 #16');
+    if (isErr(out.AR)) n('AR（利益額）', out.AR.code, '仕入れ値が Profit_Amounts の先頭の下限より小さいため「#N/A」になります（意図的な停止）', '3.4・7章 #16');
+    if (isErr(out.R) && !out.unknown) n('R・U・AD・AH・S・出品価格', out.R.code, out.R.note || '前の列のエラーが伝わります', '4.7・7章 #2');
+    if (isErr(out.AD) && !isErr(out.R)) n('AD・S・O', out.AD.code, '免除の行で 1−F1−F2−Z2 が 0 以下のため「#N/A」です（エラーを隠さない式です）', '4.9・7章 #14');
+    if (out.O === 'エラー') n('O（ポリシー）', 'エラー', '商品状態 AE が 新品／中古 でない、または配送方法が EMS・AM など配送タイプに変換できない値です', '5.1・7章 #5・#7');
+    else if (out.O === '該当なし') n('O（ポリシー）', '該当なし', '想定関税に合う帯、または DDP・免除のポリシー名が (D) の一覧にありません', '5.1・7章 #11・#12');
+    else if (out.O === '' && !isErr(out.R) && out.AD !== '') n('O（ポリシー）', '空', '送料上限カテゴリ・商品状態・配送方法のどれかが空、または想定関税が 0 です（0 は空扱い）', '4.12・7章 #8・#9');
+    if (out.E === '該当なし') n('E（テンプレート）', '該当なし', 'Template_<名>_<new|used>_<eco|xp> の標準名が (D) のテンプレート一覧にありません', '4.13・7章 #13');
+    else if (out.E === '') n('E（テンプレート）', '空', 'テンプレート名・商品状態・配送方法のどれかが空です', '4.13・7章 #3');
+    return notes;
+  }
+
+  // ============================================================
+  // 8. 途中経過の説明（1件入力）
+  // ============================================================
+  const fmtN = (v) => (typeof v === 'number' ? (Math.round(v * 1e6) / 1e6).toLocaleString('en-US', { maximumFractionDigits: 6 }) : String(v));
+  const pctS = (v) => (typeof v === 'number' ? String(Math.round(v * 1e6) / 1e4) + '%' : String(v));
+  function buildSteps(state, ctx, out, D, I) {
+    const S = ctx.S, tag = D in ctx.tags ? ctx.tags[D] : null;
+    const steps = [];
+    const st = (no, title, sec, value, text) => steps.push({ no, title, sec, value: show(value), text });
+    if (D === '') { st(1, 'タグの引き当て', '4.1', '(空)', 'タグが空です。シートでは AE・X・E・O・AQ・AR・AS が空になります。'); return steps; }
+    st(1, 'タグの引き当て', '4.1', tag ? '登録あり' : '未登録', tag ? 'タグ「' + D + '」を TagShipping の A 列から完全一致で探し、見つかった行の設定を使います。' : 'タグ「' + D + '」は TagShipping に無いので、設定は共通設定の値に倒れます（商品状態 P2・配送 AQ2/AQ3/AJ4・率 F1/F2/H2・カテゴリ O1・テンプレ O2）。送料は文字「#タグ未登録」になります。');
+    st(2, '商品状態 AE', '4.2', out.AE,
+      !tag ? '未登録タグなので、共通設定 P2 の「' + S.P2 + '」を使います。' :
+        ((tag.P === '' || tag.P === 'AI') ? 'タグの商品状態が「' + (tag.P || '空欄') + '」なので、共通設定 P2 の「' + S.P2 + '」を使います。' : 'タグの商品状態「' + tag.P + '」を使います。') +
+        ((out.AE !== '新品' && out.AE !== '中古') ? ' 新品でも中古でもないため、ポリシー O は「エラー」、テンプレート E は中古として引かれます（9.1 K19）。' : ''));
+    // 配送方法
+    let xText;
+    if (ctx.shippingCalc === 'FIXED') {
+      xText = '全体の送料計算が「固定金額」なので、タグの L・M・N は見ず、共通設定（低価格 ' + S.AQ2 + '・高価格 ' + S.AQ3 + '・切替基準 ' + fmtN(S.AJ4) + '円）で決めます。';
+    } else {
+      const low = (tag && tag.L !== '') ? tag.L : S.AQ2, high = (tag && tag.M !== '') ? tag.M : S.AQ3, th = (tag && tag.N !== '') ? tag.N : S.AJ4;
+      xText = '低価格配送 ' + low + '・高価格配送 ' + high + '・切替基準 ' + fmtN(th) + '円（タグの値が空なら共通設定）。';
+      if (low === 'NONE') xText += ' 低価格配送が NONE なので、常に高価格配送です。';
+      else xText += ' 仕入れ ' + (I === '' ? '（空欄）' : fmtN(I) + '円') + (I !== '' && I >= th ? ' ≧ 基準 なので高価格配送' : ' ＜ 基準 なので低価格配送') + '（ちょうど基準額なら高価格配送）。';
+    }
+    st(3, '配送方法 X', '4.3', out.X, xText);
+    // DDP/DDU
+    const Rt = tag ? String(tag.R).trim().toUpperCase() : '';
+    let ax;
+    if (!tag) ax = '未登録タグは DDU です。';
+    else if (Rt === 'DDP' || Rt === 'DDU') ax = 'タグの DDP/DDU設定「' + Rt + '」をそのまま使います。';
+    else if (out.tfGate && TF_TAG.test(Rt)) ax = 'タグが免除指定「' + Rt + '」です。配送が EP かつ 中古 の行だけ DDP（免除）になり、それ以外は DDU です。' + (out.AY ? ' この行は免除です（' + out.AY + '）。' : ' この行は条件に合わないので普通の DDU です。');
+    else ax = Rt === '' ? 'DDP/DDU設定が空なので DDU です。' : 'DDP/DDU設定「' + tag.R + '」は DDP・DDU・DDP_TF_<4桁> のどれでもないので DDU です。';
+    st(4, 'DDP / DDU・免除 AX・AY', '4.4', out.AX + (out.AY ? ' / ' + out.AY : ''), ax + ' DDP は関税込みの価格で出品、DDU は関税を買い手が払う方式です。');
+    // 送料
+    const shipMethod = (tag && tag.T !== '') ? tag.T : METHOD.SHIPPING_TAG;
+    let asT;
+    if (shipMethod === METHOD.SHIPPING_FIXED) asT = '送料方法が「固定金額」なので、' + ((S.J1 !== '' && S.J1 !== undefined) ? '共通設定 J1 の ' + fmtN(S.J1) + '円' : 'Profit_Amounts の D 列を仕入れ値で（近似一致で）引いた値') + 'を使います。';
+    else if (isErr(out.AS) || typeof out.AS === 'string' && out.AS.charAt(0) === '#') asT = '送料を決められません（' + show(out.AS) + '）。';
+    else asT = '送料方法は「タグ別送料」。配送方法 ' + out.X + ' に対応するタグの ' + TAG_COL[out.X] + ' 列（' + ({ B: 'EP送料', C: 'CE送料', D: 'CF/CD送料' })[TAG_COL[out.X]] + '）の値を使います。';
+    st(5, '送料 AS（＝T 列）', '4.5', out.AS, asT);
+    // 率
+    st(6, '手数料率・広告費率・利益率', '4.6', '手数料 ' + show(pctS(out.V)) + ' / 広告費 ' + show(pctS(out.ad)) + ' / 利益率 ' + (out.AQ === '' ? '(なし)' : pctS(out.AQ)) + ' / 利益額 ' + (out.AR === '' ? '(なし)' : show(out.AR) + '円'),
+      'タグの手数料率（K）・広告費率（J）・利益率（I）を使い、読めなければ共通設定の F1・F2・H2 を使います。' +
+      (ctx.profitCalc === 'AMOUNT' ? '全体が「利益額」方式なので、利益額は H1（空なら Profit_Amounts の C 列）です。' : (tag && tag.S === METHOD.PROFIT_AMOUNT ? 'タグの利益方法が「利益額」なので、利益率は使わず、利益額（H1、空なら Profit_Amounts の C 列）を使います。' : '利益方法は「利益率」です。')));
+    // R
+    let rText = '';
+    if (out.R === '') rText = '仕入れ値が空なので空です。';
+    else if (isErr(out.R)) rText = out.R.note || '前の列がエラーのため、エラーになります。';
+    else {
+      const den = '1 − (' + [pctS(out.V), out.AQ !== '' && ctx.profitCalc === 'RATE' ? pctS(out.AQ) : null, pctS(out.ad), pctS(S.Z2)].filter((x) => x !== null).join(' + ') + ')';
+      const num = ctx.profitCalc === 'AMOUNT' ? fmtN(I) + ' + ' + fmtN(out.AS) + ' + ' + fmtN(out.U) : (tag && tag.S === METHOD.PROFIT_AMOUNT ? fmtN(I) + ' + ' + fmtN(out.AS) + ' + ' + fmtN(out.AR) : fmtN(I) + ' + ' + fmtN(out.AS));
+      rText = '（' + num + '）÷（' + den + '）÷ 為替 ' + fmtN(S.C2) + ' を、小数 2 桁（セント）に丸めます。仕入れ＋送料［＋利益額］の円を、手数料などの率で割って売値にし、ドルへ直す計算です。';
+    }
+    st(7, '販売価格 R（DDU 価格・USD）', '4.7', out.R, rText);
+    st(8, '利益 U（円）', '4.8', out.U, isErr(out.U) || out.U === '' ? '販売価格 R が決まらないため、空かエラーです。' :
+      ((ctx.profitCalc === 'AMOUNT' || (tag && tag.S === METHOD.PROFIT_AMOUNT)) ? '利益額方式なので、利益額そのものです（R の丸めの分は含めません）。' : 'R × 為替 ×（1 − 手数料・広告費・Payoneer の率）− 仕入れ − 送料 を整数円に丸めた値です。赤字なら負になります。'));
+    // 関税
+    let adText;
+    if (out.R === '' || isErr(out.R)) adText = '販売価格 R が決まらないため、空かエラーです。';
+    else if (out.AY && out.AY.indexOf('TF_') === 0) adText = '免除の行なので、（Zonos 固定手数料 ' + fmtN(typeof S.AZ2 === 'number' ? S.AZ2 : 1.69) + ' ＋ ラベル代 ' + fmtN(typeof S.BA2 === 'number' ? S.BA2 : 50) + '円 ÷ 為替）÷（1 − F1 − F2 − Z2）で作ります。実際の関税額 AH は割り戻さない実費（' + show(out.AH) + '）です。';
+    else adText = '想定関税 AD ＝ 販売価格 × 調整後関税率 AF2（' + pctS(Math.round(out.AF2 * 1e6) / 1e6) + '）×（1＋関税処理手数料率）＋ 販売価格 × VAT 率 × 関税処理手数料率' + (out.X === 'CE' ? ' ＋ CE 通関手数料 ÷ 為替' : '') + ' ＋ MPF ＋ EU 差額 ÷ 為替。調整後関税率 AF2 は共通設定の F1・F2 から作られ、タグ別の率は入りません（K12）。実際の関税額 AH は AF2 の代わりに実際の関税率を使った値（' + show(out.AH) + '）です。関税込み価格 S ＝ R ＋ AD（DDP の価格）。';
+    st(9, '想定関税 AD・関税込み価格 S', '4.9', 'AD ' + show(out.AD) + ' / S ' + show(out.S), adText);
+    st(10, 'DDU 調整後価格 AG', '4.10', out.AG === '' ? '(なし)' : out.AG, S.AP2 !== 'ON' ? 'DDU 調整が OFF なので、AG は空です。' : (out.AG === '' ? 'DDU 調整は ON ですが、想定関税が閾値 ' + fmtN(out.thr) + ' に届かないので空です。' : '想定関税が閾値 ' + fmtN(out.thr) + ' 以上なので、関税込み価格 S − 閾値 になります。DDP の行でも AG が数値なら出品価格に使われます（9.1 K7）。'));
+    // O
+    let oText;
+    const pname = policyNameOf(state, out.O);
+    if (isErr(out.O)) oText = out.O.note || 'エラーのため決まりません。';
+    else if (out.O === '') oText = '条件（カテゴリ・状態・配送・想定関税）のどれかが空のため、空です。';
+    else if (out.AY && out.AY.indexOf('TF_') === 0) oText = '免除の行なので、名前の末尾が eco_used_taxfree_' + out.AY.slice(-4) + ' のポリシーを Policy_Master から探します（想定関税は使いません）。';
+    else if (out.AX === 'DDP') oText = 'DDP の行なので、名前の末尾が ' + ((out.X === 'EP' || out.X === 'CE') ? 'eco' : 'xp') + '_' + (out.AE === '新品' ? 'new' : 'used') + '_free のポリシーを探します（想定関税は使いません）。';
+    else oText = '想定関税 ' + fmtN(out.policyTaxArg === undefined ? out.AD : out.policyTaxArg) + (out.policyTaxArg !== undefined && out.policyTaxArg !== out.AD ? '（閾値で頭打ち）' : '') + ' ドルが入る帯（' + ((out.X === 'EP' || out.X === 'CE') ? 'eco' : 'xp') + '・' + (out.AE === '新品' ? 'new' : 'used') + '）のポリシーを Import_Policies から選びます。送料上限カテゴリ「' + (tag ? tag.H : S.O1) + '」は上限を超える帯を除きます。想定関税が最大の帯を超えたときは最大の帯になります。';
+    st(11, 'シッピングポリシー O', '4.12・5.1', show(out.O) + (pname ? '（' + pname + '）' : ''), oText);
+    // E
+    const tpl = tag ? tag.G : S.O2;
+    const key = 'Template_' + tpl + '_' + (out.AE === '新品' ? 'new' : 'used') + '_' + ((out.X === 'EP' || out.X === 'CE') ? 'eco' : 'xp');
+    st(12, 'テンプレートID E', '4.13', show(out.E) + (out.E !== '' && out.E !== '該当なし' ? '（' + templateNameOf(state, out.E) + '）' : ''), tpl === '' ? 'テンプレート名が空のため空です。' : 'テンプレート名「' + tpl + '」・状態・配送から標準名 ' + key + ' を作り、Import_Templates の標準名と完全一致する行の ID を返します。');
+    // 出品価格
+    st(13, '出品価格（v5出品シート）', '4.14', out.listing, out.R === '' || isErr(out.R) ? '販売価格 R が決まらないため、空かエラーです。' : (typeof out.AG === 'number' ? 'DDU 調整後価格 AG が数値なので AG です。' : (out.AX === 'DDP' ? 'DDP の行なので関税込み価格 S です。' : 'DDU の行なので販売価格 R です。')));
+    return steps;
+  }
+
+  // ============================================================
+  // 9. シートとの照合（仕様書 5.3・9章）
+  // ============================================================
+  const COMPARE_COLS = ['R', 'S', 'T', 'U', 'V', 'W', 'X', 'AD', 'AE', 'AG', 'AH', 'AQ', 'AR', 'AS', 'AX', 'AY', 'O', 'E', '出品価格'];
+  const COL_NAME = { D: 'タグ', I: '仕入価格', R: '販売価格', S: '関税込み価格', T: '送料', U: '利益', V: '手数料率', W: '利益率(表示用)', X: '配送方法', AD: '想定関税', AE: '商品状態', AG: 'DDU調整後価格', AH: '実際の関税額', AQ: '適用利益率', AR: '適用利益額', AS: '適用送料', AX: 'DDPフラグ', AY: '免除フラグ', O: 'シッピングポリシー', E: 'テンプレートID', '出品価格': '出品価格' };
+  const TOL = { R: 0.001, S: 0.001, AD: 0.001, AH: 0.001, AG: 0.005, T: 0.001, AS: 0.001, U: 0.001, AR: 0.001, V: 0.0005, W: 0.0005, AQ: 0.0005, '出品価格': 0.005 };
+
+  function parseColumnHeads(str) {
+    return nfkc(String(str)).split(/[\s,、，]+/).map((s) => s.trim()).filter((s) => s !== '').map((s) => (s === '出品価格' ? s : s.toUpperCase()));
+  }
+  // シートの1セル（貼り付けの文字）を読む
+  function readSheetCell(raw) {
+    // 文字は直さない（全角半角・空白・見えない文字もそのまま比べる）。数値の表示の書式（カンマ・$・¥・%）だけ読み取る
+    const r = String(raw === undefined || raw === null ? '' : raw);
+    if (r === '') return { kind: 'blank', text: '' };
+    if (r.charAt(0) === '#') return { kind: 'err', text: r };
+    const s = r.replace(/[,$¥￥]/g, '');
+    if (s.slice(-1) === '%' && isNumText(s.slice(0, -1))) return { kind: 'num', num: Number(s.slice(0, -1)) / 100, text: r };
+    if (isNumText(s)) return { kind: 'num', num: Number(s), text: r };
+    return { kind: 'text', text: r };
+  }
+  // ツールの値を同じ形で
+  function readToolCell(v) {
+    if (v === undefined || v === null || v === '') return { kind: 'blank', text: '' };
+    if (isErr(v)) return { kind: 'err', text: v.code };
+    if (typeof v === 'number') return { kind: 'num', num: v, text: String(Math.round(v * 1e9) / 1e9) };
+    const s = String(v);
+    if (s.charAt(0) === '#') return { kind: 'err', text: s };
+    return { kind: 'text', text: s };
+  }
+  function compareCell(col, sheetRaw, toolVal) {
+    const a = readSheetCell(sheetRaw), b = readToolCell(toolVal);
+    const res = { col, sheet: a.text, tool: b.text, status: 'match', diff: '' };
+    if (a.kind === 'blank' && b.kind === 'blank') return res;
+    if (a.kind === 'num' && b.kind === 'num') {
+      const tol = TOL[col] !== undefined ? TOL[col] : 0;
+      const d = b.num - a.num;
+      if (Math.abs(d) > tol + 1e-12) { res.status = 'diff'; res.diff = (d > 0 ? '+' : '') + String(Math.round(d * 1e6) / 1e6); res.delta = d; }
+      return res;
+    }
+    if (a.kind === 'err' && b.kind === 'err') { if (a.text !== b.text) { res.status = 'diff'; res.diff = 'エラーの種類が違う'; } return res; }
+    if (a.kind === 'text' && b.kind === 'text') { if (a.text !== b.text) { res.status = 'diff'; res.diff = (nfkc(trimAll(a.text)) === nfkc(trimAll(b.text))) ? '見た目は同じだが文字が違う（全角半角・空白・見えない文字）' : '文字が違う'; } return res; }
+    if (a.kind === 'num' && b.kind === 'text' || a.kind === 'text' && b.kind === 'num') {
+      if (a.text.replace(/,/g, '') === b.text) return res;
+    }
+    res.status = 'diff';
+    res.diff = a.kind === 'blank' ? 'シートは空・ツールは値あり' : (b.kind === 'blank' ? 'シートは値あり・ツールは空' : '種類が違う（' + a.kind + ' と ' + b.kind + '）');
+    return res;
+  }
+  // ツールの出力から、列記号の値を取り出す
+  function toolValue(col, out, ctx, tag) {
+    switch (col) {
+      case 'R': return out.R; case 'S': return out.S; case 'U': return out.U; case 'X': return out.X; case 'AD': return out.AD; case 'AE': return out.AE;
+      case 'AG': return out.AG; case 'AH': return out.AH; case 'AQ': return out.AQ; case 'AR': return out.AR; case 'AS': return out.AS;
+      case 'AX': return out.AX; case 'AY': return out.AY; case 'O': return out.O; case 'E': return out.E; case '出品価格': return out.listing;
+      case 'T': return out.I === '' ? '' : out.AS;
+      case 'V': return out.V;
+      case 'W': return (tag && E.percentCell(tag.I) !== null) ? E.percentCell(tag.I) : ctx.S.H2;
+      default: return undefined;
+    }
+  }
+  // 貼り付けた作業シートの行をツールで計算し、1件ずつ比べる
+  function reconcile(state, headsStr, text, opts) {
+    opts = opts || {};
+    const heads = parseColumnHeads(headsStr);
+    const res = { heads, rows: [], summary: null, errors: [], ignoredCols: [], settingsNote: [] };
+    const iD = heads.indexOf('D'), iI = heads.indexOf('I');
+    if (iD === -1 || iI === -1) { res.errors.push('列の見出しに D（タグ）と I（仕入れ値）が必要です。'); return res; }
+    const dup = heads.filter((h, i) => heads.indexOf(h) !== i);
+    if (dup.length) { res.errors.push('列の見出しに同じ列記号が重複しています: ' + Array.from(new Set(dup)).join('、')); return res; }
+    const cmpHeads = heads.filter((h) => COMPARE_COLS.indexOf(h) !== -1);
+    res.ignoredCols = heads.filter((h) => h !== 'D' && h !== 'I' && COMPARE_COLS.indexOf(h) === -1);
+    const ctx = buildCtx(state);
+    const parsed = parseDelimited(text, '\t');
+    let rows = parsed.rows.map((r, i) => ({ r, line: i + 1 })).filter((x) => !isBlankRow(x.r));
+    if (opts.skipHeader === undefined) {
+      // 先頭行の I 列が空でなく数値でないとき、見出しとして読み飛ばす（読み飛ばした行は画面に出す）
+      if (rows.length && trimAll(rows[0].r[iI] === undefined ? '' : rows[0].r[iI]) !== '' && Number.isNaN(parseCost(rows[0].r[iI]))) opts.skipHeader = true;
+    }
+    if (opts.skipHeader && rows.length) { res.headerSkipped = { line: rows[0].line, text: rows[0].r.join(' | ') }; rows = rows.slice(1); }
+    const colCount = { compared: {}, mismatch: {} };
+    cmpHeads.forEach((h) => { colCount.compared[h] = 0; colCount.mismatch[h] = 0; });
+    let match = 0, mismatch = 0, skipped = 0;
+    rows.forEach((rw) => {
+      const cells = rw.r;
+      const D = String(cells[iD] === undefined ? '' : cells[iD]);
+      const costRaw = cells[iI] === undefined ? '' : cells[iI];
+      const I = parseCost(costRaw);
+      const item = { no: rw.line, D, I: costRaw, cells: [], status: 'match', causes: [], skipReason: '' };
+      if (D === '') { item.status = 'skip'; item.skipReason = 'D（タグ）が空の行は比べません（シートでは多くの列が空になります: 7章 #1）'; skipped++; res.rows.push(item); return; }
+      if (Number.isNaN(I)) { item.status = 'skip'; item.skipReason = '仕入れ値「' + costRaw + '」が数値ではないため比べません'; skipped++; res.rows.push(item); return; }
+      const out = calcRow(ctx, D, I);
+      const tag = D in ctx.tags ? ctx.tags[D] : null;
+      item.out = out; item.tagKnown = !!tag;
+      cmpHeads.forEach((h) => {
+        const ci = heads.indexOf(h);
+        const c = compareCell(h, cells[ci], toolValue(h, out, ctx, tag));
+        item.cells.push(c);
+        colCount.compared[h]++;
+        if (c.status === 'diff') { colCount.mismatch[h]++; item.status = 'diff'; }
+      });
+      if (item.status === 'diff') { mismatch++; item.causes = causesFor(state, ctx, item, tag, out); } else match++;
+      res.rows.push(item);
+    });
+    res.summary = { total: rows.length, compared: rows.length - skipped, match, mismatch, skipped, byColumn: cmpHeads.map((h) => ({ col: h, compared: colCount.compared[h], mismatch: colCount.mismatch[h] })) };
+    return res;
+  }
+
+  // 考えられる原因（断定しない。仕様書に根拠があるものだけ）
+  function causesFor(state, ctx, item, tag, out) {
+    const S = ctx.S;
+    const bad = {};
+    item.cells.forEach((c) => { if (c.status === 'diff') bad[c.col] = c; });
+    const has = (...cols) => cols.some((c) => bad[c]);
+    const causes = [];
+    const add = (text, basis) => { if (!causes.some((c) => c.text === text)) causes.push({ text, basis }); };
+    if (!tag) {
+      const trimmed = trimAll(item.D);
+      add('タグ「' + item.D + '」がツールのタグ設定（(A)）にありません。シートに登録されていれば、貼り付けたタグ設定が足りないか、空白・全角半角の違いで別のタグになっています。', '4.1・7章 #2');
+      if (trimmed !== item.D) add('タグ名の前後に空白があります。シートの式は完全一致で引きます。', '4.1');
+    }
+    if (has('U') && !has('R') && bad.U.delta !== undefined && Math.abs(bad.U.delta) <= 1 + 1e-9) add('利益の丸めの違いかもしれません（丸める前の値がちょうど負の .5 のとき、JavaScript と シートの ROUND の結果が 1 円ずれる）。', '9.2・付録B');
+    if (has('R')) {
+      const a = readSheetCell(bad.R.sheet), b = readToolCell(out.R);
+      if (a.kind === 'num' && b.kind === 'num' && b.num !== 0) add('販売価格が違います（シート÷ツール＝' + (Math.round(a.num / b.num * 1e5) / 1e5) + '）。為替 C2・手数料率・広告費率・Payoneer 率・利益率（または利益額・Profit_Amounts）・送料のどれかが、シートの値と食い違っている可能性があります。比がどの行でも同じなら為替 C2 のずれが疑われます。', '3.2・4.6・4.7・4.17');
+      else add('販売価格が数値でそろいません（片方がエラー・空）。タグ未登録・送料セルの文字・仕入れ値の範囲（Profit_Amounts）などを確かめてください。文字を足し算したときのエラーの種類は実機で未確認です。', '4.5・7章 #2・9.3 #1');
+    }
+    if (has('AD', 'AH', 'S', 'AG') && !has('R')) {
+      add('想定関税 AD・実際の関税額 AH は、共通設定の実際の関税率 AA2・関税処理手数料率 AG2・VAT 率 AE2・CE 通関手数料 AB2・EU 差額 AC2・MPF AH2 と、為替 C2 から作られます。これらがシートの値と食い違っている可能性があります。', '3.2・4.9');
+      if (tag) {
+        const k = E.percentCell(tag.K), j = E.percentCell(tag.J);
+        if ((k !== null && Math.abs(k - S.F1) > 1e-9) || (j !== null && Math.abs(j - S.F2) > 1e-9)) add('このタグの手数料率・広告費率は共通設定の F1・F2 と違います。想定関税 AD の率（調整後関税率 AF2）はタグ別でなく共通設定の F1・F2 から作られます。タグ別の率で関税を見積もる別の計算と比べると、ここがずれます。', '4.9・9.1 K12');
+      }
+    }
+    if (has('AG') && S.AP2 === 'ON') add('DDU 調整後価格 AG は、DDU 調整 AP2・想定関税の閾値（タグの送料上限カテゴリの $ の数字、無ければ AP3）に左右されます。シートの AP2・AP3・タグの H 列と食い違っていないか確かめてください。', '4.10・4.11');
+    if (has('AG') && S.AP2 !== 'ON') add('ツールは DDU 調整 AP2 が ON 以外のため AG を空にしています。シートの AP2 が ON なら、共通設定の AP2 を合わせてください。', '3.2・4.10');
+    if (has('X')) add('配送方法は、タグの低価格・高価格配送（L・M）と送料切替基準（N）、無いときは共通設定の AQ2・AQ3・AJ4 で決まります。全体の送料計算（タグ別送料／固定金額）の選択も影響します。', '4.3');
+    if (has('AE')) add('商品状態は、タグの商品状態（P）、「AI」か空欄のときは共通設定 P2 です。', '4.2');
+    if (has('AX', 'AY')) add('DDP/DDU は、タグの DDP/DDU設定（R）と、免除（DDP_TF_）の条件（EP かつ 中古）、および免除ゲート（初期設定の再保存）で決まります。', '4.4・7章 #26');
+    if (has('T', 'AS')) add('送料は、タグの B・C・D 列（配送方法の列）、または「固定金額」のとき J1・Profit_Amounts の D 列です。表の値が違っていないか確かめてください。', '3.4・4.5');
+    if (has('AR', 'AQ', 'V', 'W')) add('率・利益額は、タグの I・J・K 列、無ければ共通設定の H2・F1・F2、利益額方式のとき H1・Profit_Amounts の C 列です。タグの率が数値セルで入っている場合の読み方は実機で未確認です。', '3.3・4.6・9.3 #9');
+    if (has('U') && !has('R') && !(bad.U.delta !== undefined && Math.abs(bad.U.delta) <= 1 + 1e-9)) add('利益額は、利益額方式のとき Profit_Amounts の C 列・H1、利益率方式のとき R の丸め後の値から計算されます。', '4.8');
+    if (has('O')) {
+      if (state.policyMode === 'sample') add('ポリシー一覧が見本のままです（ポリシーIDは作り物）。(D) でシートの Import_Policies を貼り付けるまで、IDは一致しません。', '3.6・8章');
+      else add('ポリシー一覧（Import_Policies）の内容がシートと違う可能性があります。シート側は取得した一覧を最大 30 分覚えているため、古い一覧のままのことがあります。', '3.6・9.1 K14');
+      add('シートの O 列が、作業シートの式ではなく「選択行にテンプレート・ポリシーをまとめて設定する機能」（値を書き込む方式。仕様書 5.2）で書かれた結果なら、式の計算と動きが違います（新形式の名前を読めない・DDP のポリシーが見つからない・関税の閾値で頭打ちしない・送料上限カテゴリが効かない）。このツールは作業シートの式の動きをまねています。', '5.2・5.3・9.1（既知の問題 K1〜K3）');
+      if (S.AP2 === 'ON') add('DDU 調整が ON のとき、ポリシー選択には閾値で頭打ちした想定関税を使います。', '4.12');
+    }
+    if (has('E')) {
+      if (state.templateMode === 'sample') add('テンプレート一覧が見本のままです（テンプレートIDは作り物）。(D) でシートの Import_Templates を貼り付けるまで、IDは一致しません。', '3.8・8章');
+      else add('テンプレート一覧（Import_Templates の 2〜50 行目）や標準名がシートと違う可能性があります。「まとめて設定する機能」が値で書いた結果は、作業シートの式の結果と違うことがあります。', '4.13・5.3');
+    }
+    if (has('S') && !has('R', 'AD')) add('関税込み価格 S は 販売価格 R ＋ 想定関税 AD です。', '4.9');
+    if (has('出品価格') && !has('R', 'S', 'AG')) add('出品価格は AG が数値なら AG、そうでなく DDP なら S、それ以外は R です。', '4.14・9.1 K7');
+    if (!causes.length) add('原因の候補が見つかりません。ツールの計算（8章の表と同じ手順）とシートの結果が食い違っています。設定値・タグ設定・一覧を再確認してください。', '5.3・9章');
+    return causes.slice(0, 7);
+  }
+  // 照合結果の書き出し（タブ区切り用の表）
+  function reconcileToTable(res) {
+    const heads = res.summary ? res.summary.byColumn.map((c) => c.col) : [];
+    const header = ['No', 'タグ', '仕入価格', '判定'];
+    heads.forEach((h) => { header.push(h + ' シート', h + ' ツール', h + ' 差'); });
+    header.push('考えられる原因（断定しません）');
+    const out = [header];
+    res.rows.forEach((r) => {
+      const row = [r.no, r.D, r.I, r.status === 'match' ? '一致' : (r.status === 'diff' ? '不一致' : 'スキップ: ' + r.skipReason)];
+      heads.forEach((h) => {
+        const c = r.cells.find((x) => x.col === h);
+        row.push(c ? c.sheet : '', c ? c.tool : '', c ? (c.status === 'diff' ? c.diff : '') : '');
+      });
+      row.push(r.causes.map((c) => c.text + '（' + c.basis + '）').join(' / '));
+      out.push(row);
+    });
+    return out;
+  }
+  // 照合に貼り付ける形式の文字列を作る（テスト・見本用）: ctx の計算結果を列記号の順に並べる
+  function sheetPasteFromCalc(state, heads, items) {
+    const ctx = buildCtx(state);
+    return items.map((it) => {
+      const out = calcRow(ctx, it.D, it.I);
+      const tag = it.D in ctx.tags ? ctx.tags[it.D] : null;
+      return heads.map((h) => {
+        if (h === 'D') return it.D;
+        if (h === 'I') return it.I === '' ? '' : String(it.I);
+        const v = toolValue(h, out, ctx, tag);
+        return isErr(v) ? v.code : (v === undefined ? '' : String(v));
+      }).join('\t');
+    }).join('\n');
+  }
+
+  return {
+    nfkc, trimAll, parseDelimited, toDelimited,
+    TAG_COLS, TAG_KEYS, STORED_KEYS, CATEGORIES, CHOICES, RATE_RANGE, emptyTag, derivedO, cleanCell, suggestCell, parseTagPaste, tagsToTable, sampleTags,
+    SETTING_DEFS, SETTING_KEYS, defaultSettings, settingsToJson, settingsFromJson, checkSettings, parseProfitAmounts,
+    parseImportPolicies, parsePolicyMaster, parseTemplates, bandTable, policyNameOf, templateNameOf,
+    tagMap, buildCtx, parseCost, calcRow, validateTags, countIssues, parseBatch, batchCompute, V5_COLS, parseSheetDate, parseV5Import, EAGLE_HEADS, EAGLE_MAP, eagleExport, show, outcomeNotes, buildSteps,
+    COMPARE_COLS, COL_NAME, parseColumnHeads, readSheetCell, compareCell, reconcile, reconcileToTable, sheetPasteFromCalc,
+  };
+});
+
+</script>
+<script>
+// app.js: 見本ツールの画面（DOM の組み立てとイベント）。計算・取り込み・照合は engine.js / logic.js。
+// 外部への通信はしません（通信の命令も外部ファイルの読み込みもありません）。
+(function () {
+  'use strict';
+  const E = window.EagleEngine, L = window.EagleLogic;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s === undefined || s === null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  // ---------- 状態 ----------
+  const sampleActual = window.POLICY_NAMES;
+  function samplePolicies() { return E.makeEaglePolicies(sampleActual); }
+  const state = {
+    tags: [], settings: L.defaultSettings(),
+    templates: E.IMPORT_TEMPLATES.map((t) => ({ A: t.A, C: t.C })), templateMode: 'sample',
+    importPolicies: E.buildImportPolicies(samplePolicies()), policyMasterB: samplePolicies().map((p) => ({ id: p.id, name: p.name })), policyMode: 'sample',
+  };
+  let lastBatch = null, lastV5 = null, lastRecon = null;
+
+  // ---------- 道具 ----------
+  function copyText(text, btn) {
+    const done = () => { if (btn) { const o = btn.textContent; btn.textContent = 'コピーしました'; setTimeout(() => { btn.textContent = o; }, 1500); } };
+    const fallback = () => {
+      const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) { alert('コピーできませんでした。表示された文字を手で選んでコピーしてください。'); }
+      document.body.removeChild(ta);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  }
+  function download(name, text, mime) {
+    const blob = new Blob([text], { type: mime || 'text/plain;charset=utf-8' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); document.body.removeChild(a); }, 500);
+  }
+  function readFileText(file, cb) {
+    file.arrayBuffer().then((buf) => {
+      let t = new TextDecoder('utf-8').decode(buf);
+      if (t.indexOf('�') !== -1) { try { t = new TextDecoder('shift_jis').decode(buf); } catch (e) { /* そのまま */ } }
+      cb(t);
+    });
+  }
+  const fmt = (v) => esc(L.show(v));
+  const msgBox = (cls, html) => '<div class="msg ' + cls + '">' + html + '</div>';
+  function todayStr() { const d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function skuDate() { const v = $('skuDate').value || todayStr(); const p = v.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  function toTsv(table) { return L.toDelimited(table, '\t'); }
+
+  // ---------- タブ ----------
+  document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-tab]').forEach((x) => x.classList.toggle('on', x === b));
+    document.querySelectorAll('.panel').forEach((p) => { p.hidden = p.id !== 'panel-' + b.dataset.tab; });
+    window.scrollTo({ top: $('tabs').offsetTop - 8 });
+  }));
+  document.querySelectorAll('[data-goto]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); const t = document.querySelector('[data-tab="' + b.dataset.goto + '"]'); if (t) t.click(); }));
+
+  // ============================================================
+  // (A) タグ設定
+  // ============================================================
+  const SEL_COLS = { H: L.CHOICES.H, L: L.CHOICES.L, M: L.CHOICES.M, P: L.CHOICES.P, S: L.CHOICES.S, T: L.CHOICES.T };
+  function renderTagTable() {
+    const wrap = $('tagTable');
+    if (state.tags.length === 0) { wrap.innerHTML = '<p class="muted">タグ設定がまだありません。上で貼り付けて取り込むか、「見本を読み込む」を押してください。</p>'; return; }
+    let h = '<div class="tbl-wrap"><table class="edit"><thead><tr><th>#</th>' + L.TAG_COLS.map((c) => '<th title="' + esc(c.head) + '">' + c.key + '<br><span class="sub">' + esc(c.head) + '</span></th>').join('') + '<th></th></tr></thead><tbody>';
+    state.tags.forEach((t, i) => {
+      h += '<tr data-row="' + i + '"><td class="num">' + (i + 1) + '</td>';
+      L.TAG_KEYS.forEach((k) => {
+        if (k === 'O') { h += '<td class="num ro" data-o="' + i + '">' + esc(L.derivedO(t)) + '</td>'; return; }
+        const v = t[k];
+        if (SEL_COLS[k]) {
+          const opts = ['']; SEL_COLS[k].forEach((o) => opts.push(o)); if (opts.indexOf(v) === -1) opts.push(v);
+          h += '<td><select data-r="' + i + '" data-k="' + k + '" class="' + (SEL_COLS[k].indexOf(v) === -1 && v !== '' ? 'bad' : '') + '">' + opts.map((o) => '<option value="' + esc(o) + '"' + (o === v ? ' selected' : '') + '>' + esc(o === '' ? '(空)' : o) + '</option>').join('') + '</select></td>';
+        } else h += '<td><input data-r="' + i + '" data-k="' + k + '" value="' + esc(v) + '" size="' + (k === 'A' ? 14 : (k === 'E' || k === 'Q' ? 9 : 8)) + '"></td>';
+      });
+      h += '<td><button class="mini" data-del="' + i + '" title="この行を消す">削除</button></td></tr>';
+    });
+    h += '</tbody></table></div>';
+    wrap.innerHTML = h;
+  }
+  let shownIssues = [];
+  function renderIssues() {
+    const box = $('tagIssues');
+    if (state.tags.length === 0) { box.innerHTML = ''; return; }
+    const issues = L.validateTags(state.tags, state);
+    const c = L.countIssues(issues);
+    const onlyErr = $('onlyErr').checked;
+    const list = issues.filter((x) => !onlyErr || x.level === 'error').sort((a, b) => (a.level === b.level ? a.row - b.row : (a.level === 'error' ? -1 : 1)));
+    shownIssues = list;
+    let h = '<p><span class="badge err">エラー ' + c.error + ' 件</span> <span class="badge warn">注意 ' + c.warn + ' 件</span> <span class="muted">エラー＝シートで計算が止まる・壊れるもの。注意＝シートは動くが、意図とずれやすいもの。</span></p>';
+    if (list.length === 0) h += msgBox('ok', onlyErr ? 'エラーはありません。' : '指摘はありません。');
+    else {
+      h += '<div class="tbl-wrap"><table><thead><tr><th>種類</th><th>行</th><th>タグ</th><th>列</th><th>内容</th><th>根拠（仕様書の節）</th></tr></thead><tbody>';
+      list.forEach((x, n) => { h += '<tr class="' + (x.level === 'error' ? 'row-err' : 'row-warn') + '"><td>' + (x.level === 'error' ? 'エラー' : '注意') + '</td><td class="num">' + (x.row || '全体') + '</td><td>' + esc(x.tag) + '</td><td>' + esc(x.col) + '</td><td class="wide">' + esc(x.message) + (x.fix ? '<br><button class="mini" data-fix="' + n + '">この値を直す（「' + esc(String(x.fix.value)) + '」にする）</button>' : '') + '</td><td>' + esc(x.basis) + '</td></tr>'; });
+      h += '</tbody></table></div>';
+    }
+    box.innerHTML = h;
+  }
+  function refreshTagDependents() { renderIssues(); fillTagList(); renderExportTags(); }
+  function renderExportTags() {
+    if (state.tags.length === 0) { $('tagOut').value = ''; return; }
+    const table = L.tagsToTable(state.tags, { header: $('expHeader').checked, oMode: $('expO').value });
+    $('tagOut').value = L.toDelimited(table, $('expFmt').value === 'csv' ? ',' : '\t');
+  }
+  function importTags(text, append) {
+    const r = L.parseTagPaste(text);
+    if (r.rows.length === 0) { $('tagImportMsg').innerHTML = msgBox('warn', '読み取れる行がありませんでした。シートの TagShipping を A 列から T 列まで範囲コピーして貼り付けてください。'); return; }
+    state.tags = append ? state.tags.concat(r.rows) : r.rows;
+    let h = msgBox('ok', esc(r.notes.join(' ')));
+    if (r.fixes.length) h += '<details><summary>取り込みで変えた表記 ' + r.fixes.length + ' 件（数値の書式だけ。他の列は値を直さず、シートと同じ結果になるようそのまま使います）</summary><div class="tbl-wrap"><table><thead><tr><th>行</th><th>タグ</th><th>列</th><th>内容</th></tr></thead><tbody>' + r.fixes.map((f) => '<tr><td class="num">' + f.row + '</td><td>' + esc(f.tag) + '</td><td>' + f.col + ' ' + esc(f.head) + '</td><td class="wide">' + esc(f.message) + '</td></tr>').join('') + '</tbody></table></div></details>';
+    $('tagImportMsg').innerHTML = h;
+    renderTagTable(); refreshTagDependents();
+  }
+  $('btnTagImport').addEventListener('click', () => importTags($('tagPaste').value, false));
+  $('btnTagAppend').addEventListener('click', () => importTags($('tagPaste').value, true));
+  $('btnTagSample').addEventListener('click', () => { state.tags = L.sampleTags(); $('tagImportMsg').innerHTML = msgBox('ok', '見本のタグ設定（calc-examples.js の 8 章と同じ 6 件。SKU略称だけ見本のために足しました）を読み込みました。'); renderTagTable(); refreshTagDependents(); });
+  $('btnTagClear').addEventListener('click', () => { state.tags = []; $('tagImportMsg').innerHTML = ''; renderTagTable(); refreshTagDependents(); });
+  $('btnTagAdd').addEventListener('click', () => { state.tags.push(L.emptyTag()); renderTagTable(); refreshTagDependents(); });
+  $('tagFile').addEventListener('change', (e) => { const f = e.target.files[0]; if (f) readFileText(f, (t) => { $('tagPaste').value = t; importTags(t, false); }); e.target.value = ''; });
+  $('onlyErr').addEventListener('change', renderIssues);
+  $('tagIssues').addEventListener('click', (e) => {
+    const n = e.target.dataset ? e.target.dataset.fix : undefined;
+    if (n === undefined) return;
+    const f = shownIssues[Number(n)].fix;
+    state.tags[f.row][f.col] = f.value;
+    renderTagTable(); refreshTagDependents();
+  });
+  ['expHeader', 'expO', 'expFmt'].forEach((id) => $(id).addEventListener('change', renderExportTags));
+  $('btnTagCopy').addEventListener('click', (e) => copyText($('tagOut').value, e.target));
+  $('btnTagDl').addEventListener('click', () => download($('expFmt').value === 'csv' ? 'TagShipping.csv' : 'TagShipping.tsv', ($('expFmt').value === 'csv' ? '﻿' : '') + $('tagOut').value, 'text/plain;charset=utf-8'));
+  $('tagTable').addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.dataset.r === undefined) return;
+    const i = Number(t.dataset.r), k = t.dataset.k;
+    const c = L.cleanCell(k, t.value);
+    state.tags[i][k] = c.value;
+    if (t.tagName === 'INPUT') t.value = c.value;
+    if (SEL_COLS[k]) t.classList.toggle('bad', c.value !== '' && SEL_COLS[k].indexOf(c.value) === -1);
+    const o = document.querySelector('[data-o="' + i + '"]'); if (o) o.textContent = L.derivedO(state.tags[i]);
+    refreshTagDependents();
+  });
+  $('tagTable').addEventListener('click', (e) => { const d = e.target.dataset.del; if (d !== undefined) { state.tags.splice(Number(d), 1); renderTagTable(); refreshTagDependents(); } });
+
+  // ============================================================
+  // (B) 共通設定
+  // ============================================================
+  function renderSettings() {
+    const S = state.settings.S;
+    let h = '<div class="tbl-wrap"><table><thead><tr><th>項目</th><th>入力</th><th>シートのセル</th><th>説明（仕様書の節）</th></tr></thead><tbody>';
+    L.SETTING_DEFS.forEach((d) => {
+      let inp;
+      if (d.type === 'select') inp = '<select data-s="' + d.key + '">' + d.options.map((o) => '<option' + (o === S[d.key] ? ' selected' : '') + '>' + esc(o) + '</option>').join('') + '</select>';
+      else if (d.type === 'text') inp = '<input data-s="' + d.key + '" value="' + esc(S[d.key]) + '">';
+      else {
+        const v = d.type === 'pct' ? (Math.round(S[d.key] * 1e6) / 1e4) : S[d.key];
+        inp = '<input data-s="' + d.key + '" inputmode="decimal" size="9" value="' + esc(v) + '"> <span class="muted">' + (d.type === 'pct' ? '%' : esc(d.unit || '')) + '</span>';
+      }
+      h += '<tr><td>' + esc(d.label) + '</td><td class="nowrap">' + inp + '</td><td class="num"><code>' + d.key + '</code></td><td class="wide">' + esc(d.desc) + ' <span class="muted">（' + esc(d.sec) + '）</span></td></tr>';
+    });
+    h += '<tr><td>全体の利益計算</td><td><select data-g="profitCalc"><option value="RATE">利益率（RATE）</option><option value="AMOUNT">利益額（AMOUNT）</option></select></td><td class="num"><code>AL2</code></td><td class="wide">シート全体の利益計算方法。全体が「利益額」のとき、タグの利益方法は使われません（0.2）。</td></tr>';
+    h += '<tr><td>全体の送料計算</td><td><select data-g="shippingCalc"><option value="TAG_SHIPPING">タグ別送料（TAG_SHIPPING）</option><option value="FIXED">固定金額（FIXED）</option></select></td><td class="num"><code>AJ5</code></td><td class="wide">「固定金額」のとき、配送方法はタグの L・M・N を見ず共通設定で決まります（4.3）。</td></tr>';
+    h += '</tbody></table></div>';
+    $('settingsTable').innerHTML = h;
+    document.querySelector('[data-g="profitCalc"]').value = state.settings.profitCalc;
+    document.querySelector('[data-g="shippingCalc"]').value = state.settings.shippingCalc;
+    $('pa').value = state.settings.profitAmounts.map((r) => r.join('\t')).join('\n');
+    updateSettingsInfo();
+  }
+  function updateSettingsInfo() {
+    const S = state.settings.S;
+    const af2 = S.AA2 / (1 - S.F1 - S.F2) * 1.03;
+    let h = '<p>調整後関税率（シートのセル AF2。式 <code>AA2 ÷ (1 − F1 − F2) × 1.03</code>。1.03 は式に固定）＝ <b>' + (isFinite(af2) ? (Math.round(af2 * 1e6) / 1e4) + '%' : '計算できません') + '</b></p>';
+    L.checkSettings(state.settings).forEach((x) => { h += msgBox(x.level === 'error' ? 'err' : 'warn', (x.level === 'error' ? 'エラー: ' : '注意: ') + esc(x.message) + ' <span class="muted">（' + esc(x.basis) + '）</span>'); });
+    $('settingsInfo').innerHTML = h;
+  }
+  function onSettingChange() { updateSettingsInfo(); renderIssues(); }
+  $('settingsTable').addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.dataset.g) { state.settings[t.dataset.g] = t.value; onSettingChange(); return; }
+    const key = t.dataset.s; if (!key) return;
+    const d = L.SETTING_DEFS.filter((x) => x.key === key)[0];
+    if (d.type === 'select' || d.type === 'text') state.settings.S[key] = t.value;
+    else {
+      const raw = L.nfkc(t.value).replace(/[,\s]/g, '');
+      if (raw === '' && d.type === 'numBlank') state.settings.S[key] = '';
+      else if (/^-?\d+(\.\d+)?$/.test(raw)) { const n = Number(raw); state.settings.S[key] = d.type === 'pct' ? parseFloat((n / 100).toFixed(8)) : n; }
+      else { alert(d.label + ' は数値で入力してください。'); }
+      t.value = d.type === 'pct' ? (Math.round(state.settings.S[key] * 1e6) / 1e4) : state.settings.S[key];
+    }
+    onSettingChange();
+  });
+  $('btnPaApply').addEventListener('click', () => {
+    const r = L.parseProfitAmounts($('pa').value);
+    let h = '';
+    if (r.errors.length) h += msgBox('err', r.errors.map(esc).join('<br>'));
+    if (r.rows.length) { state.settings.profitAmounts = r.rows; h += msgBox('ok', 'Profit_Amounts を ' + r.rows.length + ' 行取り込みました' + (r.errors.length ? '（読めない行は除きました）' : '') + '。'); }
+    else h += msgBox('err', '取り込める行がありません。');
+    $('paMsg').innerHTML = h; updateSettingsInfo();
+  });
+  $('btnPaReset').addEventListener('click', () => { state.settings.profitAmounts = JSON.parse(JSON.stringify(E.PROFIT_AMOUNTS)); renderSettings(); $('paMsg').innerHTML = msgBox('ok', '見本（calc-examples.js の 8.1）に戻しました。'); });
+  $('btnSetReset').addEventListener('click', () => { state.settings = L.defaultSettings(); renderSettings(); onSettingChange(); });
+  $('btnSetDl').addEventListener('click', () => download('eagle-calc-settings.json', L.settingsToJson(state.settings), 'application/json'));
+  $('btnSetCopy').addEventListener('click', (e) => copyText(L.settingsToJson(state.settings), e.target));
+  function loadSettingsText(t) {
+    const r = L.settingsFromJson(t);
+    if (r.errors.length) { $('settingsMsg').innerHTML = msgBox('err', r.errors.map(esc).join('<br>')); return; }
+    state.settings = r.settings; renderSettings(); onSettingChange();
+    $('settingsMsg').innerHTML = msgBox('ok', '設定を読み込みました。' + (r.notes.length ? esc(r.notes.join(' ')) : ''));
+  }
+  $('setFile').addEventListener('change', (e) => { const f = e.target.files[0]; if (f) readFileText(f, loadSettingsText); e.target.value = ''; });
+  $('btnSetLoad').addEventListener('click', () => loadSettingsText($('setPaste').value));
+
+  // ============================================================
+  // (C) 商品の計算
+  // ============================================================
+  function fillTagList() { $('tagList').innerHTML = state.tags.filter((t) => t.A !== '').map((t) => '<option value="' + esc(t.A) + '">').join(''); }
+  function eagleExportBox(containerId, results, noteHtml) {
+    const box = $(containerId);
+    const ex = L.eagleExport(state, results, { header: false });
+    const blanks = L.EAGLE_HEADS.filter((h, i) => ex.table.length && ex.table.every((r) => r[i] === '' || r[i] === undefined));
+    const isSample = () => state.policyMode === 'sample' || state.templateMode === 'sample';
+    let h = '<h4>EAGLE 一括登録の形で書き出す（通常版・参考ID指定・13 列）</h4>';
+    if (isSample()) h += msgBox('err', '<b>ポリシーとテンプレートが見本の作り物です。EAGLE に貼らないでください。</b> (D) にシートの一覧（Import_Policies・Import_Templates）を貼ってから書き出してください。今入っているポリシーID（900xxx）・テンプレートID（800xxx）は実在しません。');
+    h += '<p class="muted">並び: ' + L.EAGLE_HEADS.map(esc).join(' ｜ ') + '（この順にタブで区切ります。* は EAGLE 側で任意。出所は eagle-ui-notes.md、2026-11-17 に画面で確認）。タブ区切りで、EAGLE の一括登録の欄にそのまま貼れます。</p>';
+    h += '<label class="chk"><input type="checkbox" id="' + containerId + 'H"> 見出し行を付ける（EAGLE に貼るときは付けません）</label> ';
+    h += '<textarea readonly id="' + containerId + 'T" rows="6" class="mono"></textarea>';
+    h += '<p><button id="' + containerId + 'Cp" class="btn">コピー</button> <button id="' + containerId + 'Dl" class="btn ghost">ファイルに保存（.tsv）</button></p><div id="' + containerId + 'Cf"></div>';
+    h += msgBox('note', '<b>この見本が計算して入れる列</b>: *タグ・出品テンプレートid（E 列の値）・価格（出品価格。仕様書 4.14）・*custom_label（SKU）・*シッピングポリシー（O 列の値）・参考EbayID（タグ設定の E 列）。<br><b>入力から持ち回す列</b>（入力に無ければ空欄）: 仕入先・仕入先コード・*title・*コンディション説明。<br><b>常に空欄で出す列</b>: *offer了承金額・*offer拒否金額・*private_listing（価格計算の対象外。EAGLE のテンプレートの設定が使われる）。<br>' + (blanks.length ? '<b>今回の結果で全行が空欄の列</b>: ' + blanks.map(esc).join('、') : '今回は全ての列に値が入っています。') + '<br>テンプレートid・シッピングポリシーのIDは、(D) がシートのものでなければ見本用の作り物です。SKU の日付は、v5インポートの行では A 列（日付）、それ以外・読めないときは上の「SKU の日付」を使います。');
+    if (ex.skipped.length) h += msgBox('warn', '書き出さなかった行 ' + ex.skipped.length + ' 件（価格が決まらない・仕入れ値が不正）: ' + ex.skipped.slice(0, 20).map((s) => s.line + ' 行目（' + esc(s.tag) + '：' + esc(s.reason) + '）').join('、') + (ex.skipped.length > 20 ? ' ほか' : ''));
+    if (ex.warnings.length) h += msgBox('warn', '<b>EAGLE に貼る前に確かめてください（' + ex.warnings.length + ' 件）</b>: ' + ex.warnings.slice(0, 30).map((w) => w.line + ' 行目（' + esc(w.tag) + '）: ' + esc(w.message)).join('<br>') + (ex.warnings.length > 30 ? '<br>ほか ' + (ex.warnings.length - 30) + ' 件' : ''));
+    if (noteHtml) h += noteHtml;
+    box.innerHTML = h;
+    const upd = () => { $(containerId + 'T').value = toTsv(L.eagleExport(state, results, { header: $(containerId + 'H').checked }).table); };
+    upd();
+    $(containerId + 'H').addEventListener('change', upd);
+    // 見本のポリシー・テンプレートのままのときは、画面の中の確認を出す（ダイアログは使わない）
+    const guard = (label, action) => {
+      if (!isSample()) { $(containerId + 'Cf').innerHTML = ''; action(); return; }
+      $(containerId + 'Cf').innerHTML = msgBox('err', '作り物のID（ポリシー 900xxx・テンプレート 800xxx）が入っています。EAGLE に貼ると誤った登録になります。それでも' + label + 'しますか？ <button class="mini" id="' + containerId + 'Yes">はい、' + label + 'する</button> <button class="mini" id="' + containerId + 'No">やめる</button>');
+      $(containerId + 'Yes').addEventListener('click', () => { $(containerId + 'Cf').innerHTML = ''; action(); });
+      $(containerId + 'No').addEventListener('click', () => { $(containerId + 'Cf').innerHTML = ''; });
+    };
+    $(containerId + 'Cp').addEventListener('click', (e) => { const b = e.target; guard('コピー', () => copyText($(containerId + 'T').value, b)); });
+    $(containerId + 'Dl').addEventListener('click', () => guard('保存', () => download('eagle-bulk.tsv', $(containerId + 'T').value)));
+  }
+  function stepsHtml(steps) {
+    return '<div class="tbl-wrap"><table class="steps"><thead><tr><th>順</th><th>項目（仕様書の節）</th><th>値</th><th>説明</th></tr></thead><tbody>' + steps.map((s) => '<tr><td class="num">' + s.no + '</td><td>' + esc(s.title) + '<br><span class="sub">' + esc(s.sec) + '</span></td><td class="num strong">' + esc(s.value) + '</td><td class="wide">' + esc(s.text) + '</td></tr>').join('') + '</tbody></table></div>';
+  }
+  function singleCalc() {
+    const D = $('s1Tag').value, costRaw = $('s1Cost').value;
+    const I = L.parseCost(costRaw);
+    const box = $('s1Result');
+    if (I === '') { box.innerHTML = msgBox('warn', '仕入れ価格を入れてください（欄の薄い文字「例: 5000」は見本で、入力されていません）。'); $('s1Eagle').innerHTML = ''; return; }
+    if (Number.isNaN(I)) { box.innerHTML = msgBox('err', '仕入れ価格「' + esc(costRaw) + '」は数値ではありません。'); $('s1Eagle').innerHTML = ''; return; }
+    const item = { line: 1, D, costRaw, I, supplier: trimV('s1Sup'), supplierCode: trimV('s1Code'), title: '', condDesc: '', label: '', from: 'single' };
+    const res = L.batchCompute(state, [item], skuDate());
+    const r = res[0], ctx = L.buildCtx(state);
+    let h = '';
+    if (state.tags.length === 0) h += msgBox('warn', 'タグ設定が空です。(A) で貼り付けるか見本を読み込むと、タグの設定どおりに計算されます（今は全て未登録タグとして計算します）。');
+    h += stepsHtml(L.buildSteps(state, ctx, r.out, D, I));
+    h += '<p><b>SKU（C 列）</b> ' + (r.sku ? '<code>' + esc(r.sku) + '</code>（略称＋年月日＋3桁連番。連番は日付ごと・タグ略称ごとに 001 から）' : '書かれません（' + esc(r.skuNote || 'タグが空') + '）。') + ' <span class="sub">4.16</span></p>';
+    const notes = L.outcomeNotes(state, ctx, r.out, D, I);
+    if (notes.length) h += '<h4>エラー・空欄になる箇所（シートで何が表示されるか）</h4><div class="tbl-wrap"><table><thead><tr><th>列</th><th>シートでの表示</th><th>理由</th></tr></thead><tbody>' + notes.map((n) => '<tr><td>' + esc(n.col) + '</td><td class="num strong">' + esc(n.shown) + '</td><td class="wide">' + esc(n.reason) + '</td></tr>').join('') + '</tbody></table></div>';
+    else h += msgBox('ok', 'エラーや空欄になる箇所はありません（DDU 調整後価格 AG が空なのは、調整が不要なときの通常の状態です）。');
+    box.innerHTML = h;
+    eagleExportBox('s1Eagle', res);
+  }
+  const trimV = (id) => L.trimAll($(id).value);
+  $('btnS1').addEventListener('click', singleCalc);
+  $('s1Cost').addEventListener('keydown', (e) => { if (e.key === 'Enter') singleCalc(); });
+
+  function resultsTable(results) {
+    let h = '<div class="tbl-wrap"><table><thead><tr><th>行</th><th>タグ</th><th>仕入価格</th><th>配送X</th><th>状態AE</th><th>送料T</th><th>販売価格R</th><th>利益U</th><th>想定関税AD</th><th>関税込みS</th><th>AG</th><th>出品価格</th><th>DDP/DDU</th><th>ポリシーO</th><th>テンプレE</th><th>SKU</th><th>メモ</th></tr></thead><tbody>';
+    results.forEach((r) => {
+      const o = r.out;
+      const pn = o ? L.policyNameOf(state, o.O) : '';
+      const tn = o && o.E !== '' && o.E !== '該当なし' ? L.templateNameOf(state, o.E) : '';
+      h += '<tr><td class="num">' + r.in.line + '</td><td>' + esc(r.in.D) + '</td><td class="num">' + esc(r.in.costRaw) + '</td>';
+      if (!o) h += '<td colspan="14" class="wide">' + esc(r.memo.join(' ')) + '</td></tr>';
+      else h += ['X', 'AE', 'T', 'R', 'U', 'AD', 'S', 'AG', 'listing', 'AX'].map((k) => '<td class="num">' + fmt(o[k === 'T' ? 'AS' : k]) + '</td>').join('') + '<td class="num" title="' + esc(pn) + '">' + fmt(o.O) + '</td><td class="num" title="' + esc(tn) + '">' + fmt(o.E) + '</td><td class="num">' + esc(r.sku) + '</td><td class="wide">' + esc(r.memo.join(' ')) + '</td></tr>';
+    });
+    return h + '</tbody></table></div>';
+  }
+  function resultsTable2Tsv(results) {
+    const head = ['行', 'タグ', '仕入価格', '配送X', '状態AE', '送料T', '販売価格R', '利益U', '想定関税AD', '関税込みS', 'AG', '出品価格', 'DDP/DDU', 'ポリシーO', 'テンプレE', 'SKU', 'メモ'];
+    const rows = [head];
+    results.forEach((r) => {
+      const o = r.out;
+      rows.push([r.in.line, r.in.D, r.in.costRaw].concat(o ? ['X', 'AE', 'AS', 'R', 'U', 'AD', 'S', 'AG', 'listing', 'AX', 'O', 'E'].map((k) => L.show(o[k])) : ['', '', '', '', '', '', '', '', '', '', '', '']).concat([r.sku, r.memo.join(' ')]));
+    });
+    return toTsv(rows);
+  }
+  function runBatch() {
+    const rows = L.parseBatch($('batchIn').value);
+    if (rows.length === 0) { $('batchOut').innerHTML = msgBox('warn', '行がありません。「タグ」と「仕入れ値」をタブで区切った行を貼り付けてください。'); $('batchEagle').innerHTML = ''; return; }
+    const res = L.batchCompute(state, rows, skuDate());
+    lastBatch = res;
+    const bad = res.filter((r) => r.out && r.memo.length).length;
+    $('batchOut').innerHTML = msgBox('ok', rows.length + ' 行を計算しました（メモのある行 ' + bad + ' 行）。') + resultsTable(res) + '<p><button class="btn" id="btnBatchCopy">結果をコピー（タブ区切り）</button> <button class="btn ghost" id="btnBatchDl">結果を保存（.tsv）</button></p>';
+    $('btnBatchCopy').addEventListener('click', (e) => copyText(resultsTable2Tsv(res), e.target));
+    $('btnBatchDl').addEventListener('click', () => download('calc-result.tsv', resultsTable2Tsv(res)));
+    eagleExportBox('batchEagle', res);
+  }
+  $('btnBatch').addEventListener('click', runBatch);
+  $('btnBatchSample').addEventListener('click', () => { $('batchIn').value = ['サンプルA\t5000\tshiire-1\tCODE-001\tVintage item sample\tUsed, good condition.', 'サンプルB\t8000', 'サンプルC\t3000', 'サンプルD\t3000', 'サンプルE\t3000', 'サンプルF\t4000', '未登録のタグ\t5000'].join('\n'); });
+
+  // パターン2: v5インポートの行
+  function renderV5Map() {
+    $('v5Map').innerHTML = '<div class="tbl-wrap"><table><thead><tr><th>EAGLE 一括登録の列</th><th>どこから取るか</th><th>種類</th><th>節</th></tr></thead><tbody>' + L.EAGLE_MAP.map((m) => '<tr><td>' + esc(m.head) + '</td><td class="wide">' + esc(m.from) + '</td><td>' + esc(m.calc) + '</td><td>' + esc(m.sec) + '</td></tr>').join('') + '</tbody></table></div>' +
+      '<p class="muted">v5インポートの列（2 行目が見出し・3 行目からデータ）: ' + L.V5_COLS.map((c) => c.key + '=' + esc(c.head)).join('、') + '、P 列〜BC 列＝ISF1/IS値1〜ISF20/IS値20（読み込みません）。タグ（D）と仕入れ価格（I）から価格を計算し、G・H・M・N・C は持ち回し、A（日付）は SKU の日付に使います（読めないときは画面の日付）。E・F・O（テンプレート・カテゴリーID・シッピングポリシー）は貼り付けた値を使わず、ツールが計算し直します。</p>';
+  }
+  function runV5() {
+    const r = L.parseV5Import($('v5In').value);
+    if (r.items.length === 0) { $('v5Out').innerHTML = msgBox('warn', '取り込める行がありません。v5インポートシートの行（A 列から。見出しがあっても構いません）を貼り付けてください。'); $('v5Eagle').innerHTML = ''; return; }
+    const res = L.batchCompute(state, r.items, skuDate());
+    lastV5 = res;
+    let h = msgBox('ok', r.items.length + ' 行を取り込んで計算しました。' + (r.hadHeader ? '見出し行は読み飛ばしました。' : '') + (r.skipped ? ' タグ・仕入先コード・仕入れ価格が全て空の ' + r.skipped + ' 行は除きました。' : '') + ' ' + esc(r.notes.join(' ')));
+    h += '<div class="tbl-wrap"><table><thead><tr><th>行</th><th>タグ(D)</th><th>仕入先(G)</th><th>仕入先コード(H)</th><th>仕入れ価格(I)</th><th>Title(M)・持ち回し</th><th>出品価格</th><th>テンプレートid</th><th>ポリシー</th><th>label/SKU</th><th>メモ</th></tr></thead><tbody>';
+    res.forEach((x) => { const o = x.out; h += '<tr><td class="num">' + x.in.line + '</td><td>' + esc(x.in.D) + '</td><td>' + esc(x.in.supplier) + '</td><td>' + esc(x.in.supplierCode) + '</td><td class="num">' + esc(x.in.costRaw) + '</td><td class="wide">' + esc(x.in.title) + '</td><td class="num strong">' + (o ? fmt(o.listing) : '') + '</td><td class="num">' + (o ? fmt(o.E) : '') + '</td><td class="num">' + (o ? fmt(o.O) : '') + '</td><td class="num">' + esc(x.sku || x.in.label) + '</td><td class="wide">' + esc(x.memo.join(' ')) + '</td></tr>'; });
+    h += '</tbody></table></div>';
+    $('v5Out').innerHTML = h;
+    eagleExportBox('v5Eagle', res);
+  }
+  $('btnV5').addEventListener('click', runV5);
+  $('v5File').addEventListener('change', (e) => { const f = e.target.files[0]; if (f) readFileText(f, (t) => { $('v5In').value = t; runV5(); }); e.target.value = ''; });
+  $('btnV5Sample').addEventListener('click', () => {
+    const row = (d) => ['2026/11/17', 'AI', '', d[0], '', '', d[1], d[2], d[3], '日本語タイトル見本', '説明見本', '', d[4], d[5], ''].join('\t');
+    $('v5In').value = ['日付\t担当\tlabel\tタグ\tテンプレート\tカテゴリーID\t仕入れ先\t仕入れ先コード\t仕入れ価格\t日本語title\t商品説明\tセラーID\tTitle\tCondition/DIscription\tシッピングポリシー',
+      row(['サンプルA', 'shop-x', 'CODE-101', '5000', 'Sample Item One Vintage', 'Pre-owned. Good condition.']),
+      row(['サンプルE', 'shop-y', 'CODE-102', '3000', 'Sample Item Two New', 'Brand new.'])].join('\n');
+  });
+
+  // ============================================================
+  // (D) ポリシーとテンプレート
+  // ============================================================
+  function renderPolicies() {
+    $('policyMode').innerHTML = state.policyMode === 'sample'
+      ? msgBox('warn', '今は<b>見本</b>の一覧です（policy-names-actual.json の実際のポリシー名。<b>ポリシーIDは見本用の作り物（900001〜）</b>で、実在のIDではありません。xp の 0075 以上は名前の AAAA-BBBB が手元に無いので「(省略)」と書いています）。')
+      : msgBox('ok', 'シートから貼り付けた一覧を使っています（' + state.importPolicies.length + ' 行）。');
+    $('tplMode').innerHTML = state.templateMode === 'sample'
+      ? msgBox('warn', '今は<b>見本</b>のテンプレート一覧です（calc-examples.js のもの。<b>テンプレートIDは見本用の作り物（800001〜）</b>です）。')
+      : msgBox('ok', 'シートから貼り付けた一覧を使っています（' + state.templates.length + ' 行）。');
+    const bt = L.bandTable(state.importPolicies);
+    const sel = $('bandSel').value || 'all';
+    let h = '';
+    bt.groups.forEach((g) => {
+      const key = g.type + '_' + g.cond;
+      if (sel !== 'all' && sel !== key) return;
+      h += '<h4>' + (g.type === 'eco' ? 'エコノミー' : '速達便') + '（' + g.type + '）・' + (g.cond === 'new' ? '新品' : '中古') + '（' + g.cond + '）　' + g.rows.length + ' 本</h4>';
+      h += '<div class="tbl-wrap"><table><thead><tr><th>想定関税の下限(USD)</th><th>上限(USD)</th><th>ポリシー名</th><th>ID</th></tr></thead><tbody>' + g.rows.map((r) => '<tr><td class="num">' + r[5] + '</td><td class="num">' + r[6] + '</td><td>' + esc(r[1]) + '</td><td class="num">' + r[0] + '</td></tr>').join('') + '</tbody></table></div>';
+    });
+    if (sel === 'all' || sel === 'manual') h += '<h4>手動用・固定のポリシー（帯なし。DDP・免除の行が名前の末尾で探します） ' + bt.manual.length + ' 本</h4><div class="tbl-wrap"><table><thead><tr><th>ポリシー名</th><th>ID</th></tr></thead><tbody>' + bt.manual.map((r) => '<tr><td>' + esc(r[1]) + '</td><td class="num">' + r[0] + '</td></tr>').join('') + '</tbody></table></div>';
+    $('bands').innerHTML = h;
+    $('tplTable').innerHTML = '<div class="tbl-wrap"><table><thead><tr><th>ID（A）</th><th>標準名（C）</th></tr></thead><tbody>' + state.templates.map((t) => '<tr><td class="num">' + esc(t.A) + '</td><td>' + esc(t.C) + '</td></tr>').join('') + '</tbody></table></div>';
+  }
+  $('bandSel').addEventListener('change', renderPolicies);
+  $('btnPolApply').addEventListener('click', () => {
+    const r = L.parseImportPolicies($('polPaste').value);
+    let h = '';
+    if (r.errors.length) h += msgBox('err', r.errors.slice(0, 10).map(esc).join('<br>'));
+    if (r.notes.length) h += msgBox('note', r.notes.map(esc).join(' '));
+    if (r.rows.length) {
+      state.importPolicies = r.rows; state.policyMode = 'pasted';
+      if ($('pmPaste').value.trim() === '') state.policyMasterB = r.rows.map((x) => ({ id: x[0], name: x[1] }));
+      h += msgBox('ok', 'Import_Policies を ' + r.rows.length + ' 行取り込みました。' + ($('pmPaste').value.trim() === '' ? 'Policy_Master は未貼り付けなので、DDP・免除の名前探しには Import_Policies の名前を使います。' : ''));
+    } else h += msgBox('err', '取り込める行がありません。');
+    $('polMsg').innerHTML = h; renderPolicies(); renderIssues();
+  });
+  $('btnPmApply').addEventListener('click', () => {
+    const list = L.parsePolicyMaster($('pmPaste').value);
+    if (!list.length) { $('pmMsg').innerHTML = msgBox('err', '取り込める行がありません（A 列に ID、B 列に名前）。'); return; }
+    state.policyMasterB = list; $('pmMsg').innerHTML = msgBox('ok', 'Policy_Master の B 列の名前を ' + list.length + ' 件取り込みました（DDP・免除の末尾一致に使います）。'); renderIssues();
+  });
+  $('btnTplApply').addEventListener('click', () => {
+    const r = L.parseTemplates($('tplPaste').value);
+    let h = r.notes.length ? msgBox('note', r.notes.map(esc).join(' ')) : '';
+    if (r.rows.length) { state.templates = r.rows; state.templateMode = 'pasted'; h += msgBox('ok', 'テンプレート一覧を ' + r.rows.length + ' 件取り込みました。'); } else h += msgBox('err', '取り込める行がありません。');
+    $('tplMsg').innerHTML = h; renderPolicies(); renderIssues();
+  });
+  $('btnPolReset').addEventListener('click', () => {
+    state.importPolicies = E.buildImportPolicies(samplePolicies()); state.policyMasterB = samplePolicies().map((p) => ({ id: p.id, name: p.name })); state.policyMode = 'sample';
+    state.templates = E.IMPORT_TEMPLATES.map((t) => ({ A: t.A, C: t.C })); state.templateMode = 'sample';
+    $('polMsg').innerHTML = ''; $('pmMsg').innerHTML = ''; $('tplMsg').innerHTML = ''; renderPolicies(); renderIssues();
+  });
+
+  // ============================================================
+  // (E) シートとの照合
+  // ============================================================
+  function runRecon() {
+    const res = L.reconcile(state, $('reHeads').value, $('reIn').value, {});
+    lastRecon = res;
+    const box = $('reOut');
+    if (res.errors.length) { box.innerHTML = msgBox('err', res.errors.map(esc).join('<br>')); return; }
+    const s = res.summary;
+    let h = '';
+    if (res.ignoredCols.length) h += msgBox('warn', '比べられない列は無視しました: ' + res.ignoredCols.map(esc).join('、') + '（このツールが計算する列は ' + L.COMPARE_COLS.join('・') + '）。');
+    if (state.policyMode === 'sample') h += msgBox('warn', 'ポリシー一覧が見本のままです。O 列（ポリシー）は ID が作り物なので一致しません。先に (D) でシートの Import_Policies を貼り付けてください。');
+    if (state.templateMode === 'sample') h += msgBox('warn', 'テンプレート一覧が見本のままです。E 列（テンプレートID）は ID が作り物なので一致しません。先に (D) でシートの Import_Templates を貼り付けてください。');
+    if (res.headerSkipped) h += msgBox('note', esc(res.headerSkipped.line + ' 行目を見出しとして読み飛ばしました（I 列が数値でないため）: ' + res.headerSkipped.text));
+    h += '<div class="stat"><div><b>' + s.total + '</b><span>行</span></div><div class="ok"><b>' + s.match + '</b><span>一致</span></div><div class="ng"><b>' + s.mismatch + '</b><span>不一致</span></div><div><b>' + s.skipped + '</b><span>比べなかった</span></div></div>';
+    h += '<div class="tbl-wrap"><table><thead><tr><th>列</th><th>比べた件数</th><th>不一致</th></tr></thead><tbody>' + s.byColumn.map((c) => '<tr class="' + (c.mismatch ? 'row-err' : '') + '"><td>' + esc(c.col) + ' ' + esc(L.COL_NAME[c.col] || '') + '</td><td class="num">' + c.compared + '</td><td class="num">' + c.mismatch + '</td></tr>').join('') + '</tbody></table></div>';
+    const all = $('reAll').checked;
+    const list = res.rows.filter((r) => all || r.status !== 'match');
+    const CAP = 300;
+    h += '<h4>' + (all ? '全ての行' : '不一致・比べなかった行') + '（' + list.length + ' 行' + (list.length > CAP ? '。画面には先頭の ' + CAP + ' 行だけ。全件は書き出しで' : '') + '）</h4>';
+    if (list.length) {
+      h += '<div class="tbl-wrap"><table class="recon"><thead><tr><th>貼り付けの行</th><th>タグ</th><th>仕入</th><th>判定</th>' + s.byColumn.map((c) => '<th>' + esc(c.col) + '<br><span class="sub">シート／ツール</span></th>').join('') + '</tr></thead><tbody>';
+      list.slice(0, CAP).forEach((r) => {
+        h += '<tr class="' + (r.status === 'diff' ? 'row-err' : (r.status === 'skip' ? 'row-warn' : '')) + '"><td class="num">' + r.no + '</td><td>' + esc(r.D) + '</td><td class="num">' + esc(r.I) + '</td><td>' + (r.status === 'match' ? '一致' : (r.status === 'diff' ? '不一致' : 'スキップ')) + '</td>';
+        if (r.status === 'skip') h += '<td colspan="' + s.byColumn.length + '" class="wide">' + esc(r.skipReason) + '</td></tr>';
+        else {
+          h += s.byColumn.map((c) => { const x = r.cells.filter((y) => y.col === c.col)[0]; return '<td class="num ' + (x.status === 'diff' ? 'ng' : 'okc') + '">' + esc(x.sheet) + '<br>' + esc(x.tool) + (x.status === 'diff' ? '<br><span class="sub">差 ' + esc(x.diff) + '</span>' : '') + '</td>'; }).join('') + '</tr>';
+          if (r.status === 'diff') h += '<tr class="cause"><td></td><td colspan="' + (3 + s.byColumn.length) + '" class="wide"><b>考えられる原因（断定しません）</b><ul>' + r.causes.map((c) => '<li>' + esc(c.text) + ' <span class="sub">（' + esc(c.basis) + '）</span></li>').join('') + '</ul></td></tr>';
+        }
+      });
+      h += '</tbody></table></div>';
+    }
+    h += '<p><button class="btn" id="btnReCopy">結果をコピー（タブ区切り）</button> <button class="btn ghost" id="btnReDl">結果を保存（.tsv）</button></p>';
+    box.innerHTML = h;
+    $('btnReCopy').addEventListener('click', (e) => copyText(toTsv(L.reconcileToTable(res)), e.target));
+    $('btnReDl').addEventListener('click', () => download('reconcile.tsv', toTsv(L.reconcileToTable(res))));
+  }
+  $('btnRe').addEventListener('click', runRecon);
+  $('reAll').addEventListener('change', () => { if (lastRecon) runRecon(); });
+  $('btnReSample').addEventListener('click', () => {
+    const heads = L.parseColumnHeads($('reHeads').value);
+    const items = [['サンプルA', 5000], ['サンプルB', 8000], ['サンプルE', 3000], ['サンプルF', 4000]].map((x) => ({ D: x[0], I: x[1] }));
+    $('reIn').value = L.sheetPasteFromCalc(state, heads, items);
+  });
+
+  // ---------- 起動 ----------
+  $('skuDate').value = todayStr();
+  renderTagTable(); renderIssues(); renderSettings(); renderPolicies(); renderV5Map(); fillTagList();
+})();
+
+</script>
+</body>
+</html>
