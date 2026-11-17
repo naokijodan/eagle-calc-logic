@@ -55,6 +55,9 @@ input[type=checkbox]{width:auto}
 table.edit input,table.edit select{font-size:13px;padding:2px 4px}
 table.edit select.bad{background:#ffe4dc}
 td.ro{background:#f4efe7}
+td.chg{background:#ffe9a8;font-weight:700}
+td.bad{background:#ffd9cc}
+td.good{background:#e6f8f1}
 tr.row-err td{background:#fff3ee}tr.row-warn td{background:#fffaf0}
 tr.cause td{background:#fffdf9}
 tr.cause ul{padding-left:1.3em;margin:4px 0 2px}
@@ -95,6 +98,7 @@ footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13p
   <button data-tab="C">(C) 商品の計算</button>
   <button data-tab="D">(D) ポリシーとテンプレート</button>
   <button data-tab="E">(E) シートとの照合</button>
+  <button data-tab="F">(F) 本番シミュレーション</button>
 </div>
 
 <!-- ===================== (A) ===================== -->
@@ -216,6 +220,76 @@ footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13p
   <textarea id="reIn" rows="6" placeholder="例: 作業シートの行を貼り付け（タブ区切り。先頭行の I 列が数値でなければ見出しとして読み飛ばし、画面に出します）"></textarea>
   <p><button class="btn" id="btnRe">照合する</button> <button class="btn ghost" id="btnReSample">ツール自身の計算結果を貼り付けの形で入れる（動作確認用）</button></p>
   <div id="reOut"></div>
+</section>
+
+
+<!-- ===================== (F) ===================== -->
+<section class="panel" id="panel-F" hidden>
+  <h2>(F) 本番シミュレーション</h2>
+  <p>出品中の商品が、為替・仕入れ価格・タグ設定の変化で本番どう動くかを再現し、シートの値と突き合わせるための画面です。計算は全て (A)〜(E) と同じ計算です。ルールは「どれが正しいか」を決めず、選んで比べられるようにしています。</p>
+  <div class="msg note"><b>事実（コードで確認）</b>: シートの為替（セル C2）は、毎日 11 時の自動更新などで書き換わり、取得した値が 100〜200 円の範囲外のときは予備の為替（セル A2）、それも範囲外なら 145 円になります（仕様書 4.17）。シートは式なので、為替や仕入れ値が変わると、販売価格（R）・想定関税（AD）・関税込み価格（S）・ポリシー（O）・テンプレート（E）などが全て計算し直されます（ポリシーもシートでは自動で切り替わります）。<br><b>事実（EAGLE の画面で確認。2026-11-17）</b>: 出品テンプレートに「仕入価格が ○% 上がったら出品停止」「○円上がったら出品停止」の設定があります。価格を計算し直す仕組みは、確かめた範囲（1 件の登録・一括登録・出品テンプレート設定）では見当たりません（価格一括変更・利益計算・為替情報は未確認）。<br><b>推測（確かめていません）</b>: シートが作るのは「これから EAGLE に貼る値」で、登録済みの出品がシートの再計算と一緒に変わるわけではない、と考えています。</div>
+
+  <h3>① 出品中リスト</h3>
+  <p>登録した時点の値（為替・仕入れ値・出品価格・販売価格・想定関税・ポリシー・配送方法・テンプレート・DDP/DDU）を「いま eBay に出ている値」とみなします。登録の方法: 見本ボタン、下の貼り付け（「タグ」と「仕入れ値」をタブで区切った行）、または (C) のまとめて計算・v5インポートの結果の下にある「出品中として登録」ボタン。登録には (A) のタグ設定が必要です（最初の登録のときに、(A)(B)(D) の内容と為替 C2 を写し取ります）。</p>
+  <div class="field"><label>登録日・出来事の日付 <input type="date" id="simDate"></label>
+    <button class="btn" id="btnSimSample">見本の出品中リストを入れる（15 件前後）</button>
+    <button class="btn ghost" id="btnSimClear">出品中リストを空にする</button></div>
+  <textarea id="simPaste" rows="3" placeholder="例: サンプルA（タブ）5000"></textarea>
+  <p><button class="btn" id="btnSimPaste">貼り付けた行を出品中として登録</button></p>
+  <div id="simMsg"></div>
+  <div id="simList"></div>
+
+  <h3>② 出来事を起こす</h3>
+  <div class="box">
+    <b>為替の更新</b>（「1 日進める」）<span class="muted">　100〜200 円の範囲外を入れると、シートと同じく (B) の「予備の為替 A2」→ 145 円の順で代わりを使います。</span>
+    <div class="field"><label>日付 <input type="date" id="simFxDate"></label><label>新しい為替（円/ドル） <input id="simFxVal" inputmode="decimal" size="8" placeholder="例: 152"></label><button class="btn" id="btnSimFx">為替を更新（1日進める）</button></div>
+    <div id="simFxMsg"></div>
+  </div>
+  <div class="box">
+    <b>仕入れ価格の変更</b><span class="muted">　1 件ずつ（表のチェックで 1 件だけ選ぶ）、または選んだ商品をまとめて／全部。</span>
+    <div class="field"><label>方法 <select id="simCostMode"><option value="set">この金額にする（円）</option><option value="amount">金額で上下（円。マイナス可）</option><option value="percent">○% 上下（マイナス可）</option></select></label>
+      <label>値 <input id="simCostVal" inputmode="decimal" size="8" placeholder="例: 10"></label>
+      <label>対象 <select id="simCostTarget"><option value="sel">表で選んだ商品</option><option value="all">全部の商品</option></select></label>
+      <button class="btn" id="btnSimCost">仕入れ価格を変更</button></div>
+  </div>
+  <div class="box">
+    <b>タグ設定などの変更</b><span class="muted">　(A) でタグ設定を直した（(B)(D) も同様）あと、押すと出品中リストの計算に反映します。為替はそのままです。</span>
+    <div class="field"><button class="btn" id="btnSimEnv">タグ設定の変更を反映</button></div>
+  </div>
+  <p><button class="btn ghost" id="btnSimUndo">直前の出来事を元に戻す</button> <button class="btn ghost" id="btnSimReset">最初からやり直す（登録直後の状態に戻す）</button></p>
+  <h4>出来事の履歴</h4>
+  <div id="simHistory"></div>
+
+  <h3>③ 本番のルール（選んで比べます。どれが正しいかは決めません）</h3>
+  <div class="tbl-wrap"><table><tbody>
+    <tr><th>価格</th><td><select id="rPrice"><option value="always">計算し直した価格で出し直す</option><option value="never">出し直さない</option><option value="pct">○% 以上変わったときだけ出し直す</option><option value="usd">○ドル以上変わったときだけ出し直す</option></select> <label>値 <input id="rPriceVal" inputmode="decimal" size="6" value="3"></label> <span class="muted">（ちょうど ○% ／ ○ドルでも出し直す＝「以上」）</span></td></tr>
+    <tr><th>ポリシー</th><td><select id="rPolicy"><option value="follow">計算どおり切り替える</option><option value="hold">据え置く</option><option value="withprice">価格を出し直すときだけ一緒に切り替える</option></select></td></tr>
+    <tr><th>配送方法が変わったとき（テンプレートも変わる）</th><td><select id="rShip"><option value="follow">切り替える</option><option value="hold">据え置く</option><option value="review">止めて人が確認する（一覧に「要確認」。その商品は何も変えない）</option></select></td></tr>
+    <tr><th>出品停止</th><td><select id="rStop"><option value="off">使わない</option><option value="pct">仕入れ値が ○% 上がったら停止</option><option value="yen">仕入れ値が ○円上がったら停止</option></select> <label>値 <input id="rStopVal" inputmode="decimal" size="6" value="10"></label> <span class="muted">（ちょうど ○% ／ ○円でも停止する＝「以上」）</span>
+      <label>どちらを先に効かせるか <select id="rOrder"><option value="stopFirst">出品停止を先に（停止なら価格は出し直さない）</option><option value="priceFirst">価格の出し直しを先に（出し直すなら停止しない）</option></select></label></td></tr>
+  </tbody></table></div>
+  <p class="muted">「ルールを適用」すると「いま出ている値」が更新されます（＝ eBay に反映した想定）。適用しないで次の出来事を起こすと、ずれが積み上がる様子が見えます。配送方法を据え置いても、計算し直した価格・ポリシーは新しい配送方法で計算した値です（据え置いた配送方法とは食い違い得ます）。</p>
+  <p><button class="btn" id="btnSimApply">ルールを適用（eBay に反映した想定）</button> <label class="chk"><input type="checkbox" id="simAuto"> 出来事のたびに自動で適用する</label></p>
+
+  <h3>④ 変化の一覧</h3>
+  <div id="simSummary"></div>
+  <div id="simChanges"></div>
+
+  <h3>⑤ シートとの確認</h3>
+  <p>同じ出来事をシートに起こした後の値を貼ると、ツールの「計算し直した値」（いまの為替・タグ設定・一覧での計算）と 1 件ずつ比べます（(E) の照合と同じ仕組み）。シートに起こす手順（シートの値を変えるのは作者本人の操作です。このツールはシートに触りません）:</p>
+  <ol><li>為替: 作業シートの設定セル <code>C2</code> を、ツールの為替と同じ値にします（毎日 11 時の自動更新が動くと上書きされるので注意）。</li>
+  <li>仕入れ値: 作業シートの <code>I</code> 列（V5 では <code>v5インポート</code> の仕入れ価格の列から引かれる値）を、ツールと同じ値にします。</li>
+  <li>タグ設定: <code>TagShipping</code> を同じように直します。</li>
+  <li>作業シートの該当行を、貼る列の記号の順にコピーして下に貼ります。</li></ol>
+  <div class="field"><label>貼る列の記号（例: D, I, R …） <input id="simHeads" value="D, I, R, S, T, U, X, AD, AE, AG, O, E"></label></div>
+  <textarea id="simReIn" rows="5" placeholder="例: 作業シートの行を貼り付け（タブ区切り）"></textarea>
+  <p><button class="btn" id="btnSimRe">計算し直した値と比べる</button> <button class="btn ghost" id="btnSimReFill">ツールの計算し直した値を貼り付けの形で入れる（動作確認用）</button></p>
+  <div id="simReOut"></div>
+
+  <h3>⑥ 為替の目安</h3>
+  <p>為替が動くと、いま出ているポリシー・価格が何件変わるかを、出品中リストに対して計算します（いまの為替から ±1・±3・±5 円。ルールは使わず、「いま出ている値」との違いの件数です）。</p>
+  <p><button class="btn" id="btnSimFxTable">計算する</button></p>
+  <div id="simFxTable"></div>
 </section>
 
 <footer>見本ツール（計算の確認用）。計算は engine.js（calc-examples.js と同じ計算）。外部との通信はしません。</footer>
@@ -880,6 +954,7 @@ footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13p
   // ============================================================
   const SETTING_DEFS = [
     { key: 'C2', label: '為替（円/ドル）', type: 'num', unit: '円', sec: '4.17', desc: '全ての円→ドル変換に使う実効為替です。シートでは更新のたびに自動で書き換わります。' },
+    { key: 'A2', label: '予備の為替 A2（円/ドル。空可）', type: 'numBlank', unit: '円', sec: '3.2・4.17', desc: '為替の取得結果が 100〜200 円の範囲外のときに、シートが代わりに使う値（GOOGLEFINANCE）です。価格の計算には使わず、(F) の為替の更新だけで使います。これも範囲外・空なら 145 円になります。' },
     { key: 'F1', label: '手数料率（共通）', type: 'pct', unit: '%', sec: '3.2・4.9', desc: 'eBay の手数料率。タグの手数料率が空のときの値で、想定関税の率（調整後関税率。シートのセル AF2）はいつもこの値から作られます。' },
     { key: 'F2', label: '広告費率（共通）', type: 'pct', unit: '%', sec: '3.2・4.9', desc: '広告費率。タグの広告費率が空のときの値で、調整後関税率（AF2）もこの値から作られます。' },
     { key: 'H1', label: '利益額（円。空ならシートの表 Profit_Amounts）', type: 'numBlank', unit: '円', sec: '3.2・4.6', desc: '「利益額」方式の行で使う固定の利益額。空欄なら Profit_Amounts の C 列を仕入れ値で引きます。' },
@@ -907,7 +982,7 @@ footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13p
   const GLOBAL_PROFIT = ['RATE', 'AMOUNT'], GLOBAL_SHIP = ['TAG_SHIPPING', 'FIXED'];
 
   function defaultSettings() {
-    return { S: JSON.parse(JSON.stringify(E.BASE_S)), profitCalc: 'RATE', shippingCalc: 'TAG_SHIPPING', profitAmounts: JSON.parse(JSON.stringify(E.PROFIT_AMOUNTS)) };
+    return { S: Object.assign(JSON.parse(JSON.stringify(E.BASE_S)), { A2: 150 }), profitCalc: 'RATE', shippingCalc: 'TAG_SHIPPING', profitAmounts: JSON.parse(JSON.stringify(E.PROFIT_AMOUNTS)) };
   }
   function settingsToJson(st) {
     return JSON.stringify({ format: 'eagle-calc-settings', version: 1, S: st.S, profitCalc: st.profitCalc, shippingCalc: st.shippingCalc, profitAmounts: st.profitAmounts }, null, 2);
@@ -1636,6 +1711,349 @@ footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13p
 
 </script>
 <script>
+// sim.js: 「本番シミュレーション」(F) の画面に依存しない部分。
+// 出品中の商品が、為替・仕入れ価格・タグ設定の変化で本番どう動くかを再現する。計算は全て engine.js の関数（logic.js の calcRow 経由）を呼ぶ。
+// 外部への通信はしません。
+//   ブラウザ: engine.js・logic.js の後に読むとグローバル変数 EagleSim ができます。 node: require('./sim.js')。
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./engine.js'), require('./logic.js'));
+  else root.EagleSim = factory(root.EagleEngine, root.EagleLogic);
+})(typeof self !== 'undefined' ? self : this, function (E, L) {
+  'use strict';
+  const { isErr } = E;
+  const clone = (x) => JSON.parse(JSON.stringify(x));
+
+  // ============================================================
+  // 0. 環境（計算に使う設定一式。為替以外）と為替
+  // ============================================================
+  // state（画面の状態）から、シミュレーション用の環境を写し取る
+  function envFromState(state) {
+    return clone({
+      S: state.settings.S, profitCalc: state.settings.profitCalc, shippingCalc: state.settings.shippingCalc, profitAmounts: state.settings.profitAmounts,
+      tags: state.tags, templates: state.templates, importPolicies: state.importPolicies, policyMasterB: state.policyMasterB,
+    });
+  }
+  function ctxOf(env, fx) {
+    return L.buildCtx({
+      tags: env.tags, templates: env.templates, importPolicies: env.importPolicies, policyMasterB: env.policyMasterB,
+      settings: { S: Object.assign({}, env.S, { C2: fx }), profitCalc: env.profitCalc, shippingCalc: env.shippingCalc, profitAmounts: env.profitAmounts },
+    });
+  }
+  // 為替の更新（Utils.gs:35-99 と同じ順）: APIの値が 100〜200 ならそれ。範囲外・取得失敗なら A2 が 100〜200 のときの A2。それもだめなら 145
+  function resolveFx(input, a2) {
+    const n = input === '' || input === null || input === undefined ? NaN : Number(input);
+    if (n >= 100 && n <= 200) return { value: n, source: 'input', note: '' };
+    const a = a2 === '' || a2 === null || a2 === undefined ? NaN : Number(a2);
+    const why = Number.isNaN(n) ? '数値として読めない値' : (n < 100 ? '100 円未満' : '200 円超');
+    if (a >= 100 && a <= 200) return { value: a, source: 'A2', note: '入力 ' + input + ' は ' + why + 'のため範囲外。シートと同じく予備の為替 A2（' + a + '）を使いました。' };
+    return { value: 145, source: '145', note: '入力 ' + input + ' は ' + why + 'のため範囲外で、予備の為替 A2 も範囲外・空のため、既定の 145 円を使いました。' };
+  }
+
+  // ============================================================
+  // 1. 1 商品の「いま出ている値」の記録（登録した時点の計算結果）
+  // ============================================================
+  function policyInfo(env, id) {
+    if (id === '' || id === undefined || id === null) return { name: '', band: null };
+    const row = env.importPolicies.find((r) => String(r[0]) === String(id));
+    const m = env.policyMasterB.find((p) => String(p.id) === String(id));
+    const name = row ? row[1] : (m ? m.name : '');
+    const band = row && row[3] ? [row[5], row[6]] : null;
+    return { name, band };
+  }
+  function templateName(env, id) { const t = env.templates.find((x) => String(x.A) === String(id)); return t ? t.C : ''; }
+  const numOrNull = (v) => (typeof v === 'number' && isFinite(v) ? v : null);
+  function errText(o) {
+    if (isErr(o.listing)) return o.listing.code;
+    if (o.O === 'エラー' || o.O === '該当なし') return 'ポリシー: ' + o.O;
+    if (o.E === '該当なし') return 'テンプレート: 該当なし';
+    return '';
+  }
+  // 為替 fx・仕入れ値 I・タグ D での計算結果（engine.js の計算）
+  function snap(env, fx, D, I) {
+    const o = L.calcRow(ctxOf(env, fx), D, I);
+    const pi = policyInfo(env, o.O);
+    const price = numOrNull(o.listing);
+    return {
+      fx, cost: I, tag: D, price, R: numOrNull(o.R), AD: numOrNull(o.AD), S: numOrNull(o.S),
+      O: (typeof o.O === 'number' || typeof o.O === 'string') ? o.O : String(o.O), Oname: pi.name, band: pi.band,
+      X: o.X === undefined ? '' : o.X, E: isErr(o.E) ? String(o.E) : o.E, Ename: templateName(env, o.E),
+      AX: o.AX === undefined ? '' : o.AX, AE: o.AE === undefined ? '' : o.AE,
+      taxArg: numOrNull(o.policyTaxArg), err: errText(o), priceErr: price === null ? (isErr(o.listing) ? o.listing.code : '') : '',
+    };
+  }
+  const shipType = (X) => ((X === 'EP' || X === 'CE') ? 'エコノミー' : (X ? '速達便' : ''));
+
+  // ============================================================
+  // 2. シミュレーションの状態と出来事
+  // ============================================================
+  function create(state, date) {
+    return { env: envFromState(state), fx: state.settings.S.C2, date: date || '', items: [], nextId: 1, history: [], baseline: null };
+  }
+  const core = (sim) => JSON.stringify({ env: sim.env, fx: sim.fx, date: sim.date, items: sim.items, nextId: sim.nextId });
+  function restore(sim, json) { const c = JSON.parse(json); sim.env = c.env; sim.fx = c.fx; sim.date = c.date; sim.items = c.items; sim.nextId = c.nextId; }
+  function logEvent(sim, date, text, before) { sim.history.push({ date, text, before }); }
+
+  // 出品中として登録。entries: [{ D, cost, supplierCode, title, note }]。最初の登録のとき、環境と為替を state から写し取る
+  function register(sim, state, entries, date) {
+    const before = core(sim);
+    if (sim.items.length === 0) { sim.env = envFromState(state); sim.fx = state.settings.S.C2; }
+    let n = 0;
+    entries.forEach((e) => {
+      const I = typeof e.cost === 'number' ? e.cost : L.parseCost(e.cost);
+      if (e.D === '' || typeof I !== 'number' || Number.isNaN(I)) return;
+      const shown = snap(sim.env, sim.fx, e.D, I);
+      sim.items.push({ id: sim.nextId++, D: e.D, cost: I, supplierCode: e.supplierCode || '', title: e.title || '', note: e.note || '', regDate: date || sim.date, stopped: false, shown });
+      n++;
+    });
+    logEvent(sim, date || sim.date, '出品中として ' + n + ' 件を登録（為替 ' + sim.fx + ' 円）', before);
+    sim.baseline = core(sim);
+    return n;
+  }
+  function clearItems(sim, date) {
+    const before = core(sim);
+    sim.items = []; sim.nextId = 1; sim.history = [];
+    logEvent(sim, date || sim.date, '出品中リストを空にしました', before);
+    sim.baseline = core(sim);
+  }
+  function setFx(sim, date, input, a2) {
+    const before = core(sim);
+    const r = resolveFx(input, a2);
+    const old = sim.fx;
+    sim.fx = r.value; if (date) sim.date = date;
+    logEvent(sim, date || sim.date, '為替を更新: ' + old + ' → ' + r.value + ' 円（' + (r.source === 'input' ? '入力どおり' : (r.source === 'A2' ? '範囲外のため A2' : '範囲外のため 145')) + '）', before);
+    return r;
+  }
+  // 仕入れ価格の変更。mode: 'set'（その金額にする）/'amount'（○円上下）/'percent'（○% 上下）。ids: 商品 ID の配列
+  function setCost(sim, ids, mode, value, date) {
+    const before = core(sim);
+    let n = 0;
+    sim.items.forEach((it) => {
+      if (ids.indexOf(it.id) === -1) return;
+      let c = it.cost;
+      if (mode === 'set') c = value; else if (mode === 'amount') c = it.cost + value; else c = Math.round(it.cost * (1 + value / 100));
+      it.cost = Math.max(0, Math.round(c)); n++;
+    });
+    if (date) sim.date = date;
+    const label = mode === 'set' ? value + ' 円にする' : (mode === 'amount' ? (value >= 0 ? '+' : '') + value + ' 円' : (value >= 0 ? '+' : '') + value + '%');
+    logEvent(sim, date || sim.date, '仕入れ価格の変更（' + n + ' 件・' + label + '）', before);
+    return n;
+  }
+  function reflectEnv(sim, state, date) {
+    const before = core(sim);
+    sim.env = envFromState(state);   // 為替はシミュレーションの値を保つ（為替の出来事で動かす）
+    if (date) sim.date = date;
+    logEvent(sim, date || sim.date, 'タグ設定・共通設定・一覧の変更を反映（為替は ' + sim.fx + ' 円のまま）', before);
+  }
+  function undo(sim) {
+    if (sim.history.length === 0) return false;
+    const h = sim.history.pop();
+    restore(sim, h.before);
+    return true;
+  }
+  function reset(sim) {
+    if (!sim.baseline) return false;
+    restore(sim, sim.baseline); sim.history = [];
+    return true;
+  }
+
+  // ============================================================
+  // 3. 計算し直し・変化の判定
+  // ============================================================
+  function evaluate(sim) {
+    return sim.items.map((it) => {
+      const calc = snap(sim.env, sim.fx, it.D, it.cost);
+      const sh = it.shown;
+      const priceDiff = (sh.price !== null && calc.price !== null) ? Math.round((calc.price - sh.price) * 100) / 100 : null;
+      const pricePct = (priceDiff !== null && sh.price) ? priceDiff / sh.price * 100 : null;
+      const taxGap = taxGapOf(sh, calc);
+      return {
+        item: it, calc, priceDiff, pricePct,
+        priceChanged: priceDiff !== null && Math.abs(priceDiff) >= 0.005,
+        polChanged: String(sh.O) !== String(calc.O),
+        bandCrossed: JSON.stringify(sh.band) !== JSON.stringify(calc.band),
+        xChanged: sh.X !== calc.X, shipTypeChanged: shipType(sh.X) !== shipType(calc.X),
+        eChanged: String(sh.E) !== String(calc.E), axChanged: sh.AX !== calc.AX,
+        errNow: calc.err, taxGap,
+      };
+    });
+  }
+  // いま出ているポリシーの帯と、計算し直した想定関税との関係（帯の規則は engine.js のポリシー選択と同じ: 下限〜上限）
+  function taxGapOf(sh, calc) {
+    if (!sh.band) return null;
+    if (calc.AX === 'DDP') return { kind: 'ddp' };   // DDP（送料欄で関税を受け取らない型）に変わった商品は過不足の対象外
+    const arg = calc.taxArg !== null ? calc.taxArg : calc.AD;
+    if (arg === null || arg === undefined) return null;
+    const lo = sh.band[0], hi = sh.band[1];
+    if (arg > hi) return { kind: 'short', amount: Math.round((arg - hi) * 100) / 100, arg, hi };
+    if (arg < lo) return { kind: 'over', amount: Math.round((hi - arg) * 100) / 100, arg, hi };
+    return null;
+  }
+
+  // ============================================================
+  // 4. 本番のルール（どれが正しいかは決めない。選んで比べる）
+  // ============================================================
+  const DEFAULT_RULES = {
+    price: { mode: 'always', value: 0 },          // always 出し直す / never 出し直さない / pct ○% 以上変わったとき / usd ○ドル以上変わったとき
+    policy: 'follow',                              // follow 計算どおり切り替える / hold 据え置く / withprice 価格を出し直すときだけ
+    ship: 'follow',                                // follow 切り替える / hold 据え置く / review 止めて人が確認する
+    stop: { mode: 'off', value: 0 },               // off 使わない / pct 仕入れ値が ○% 上がったら / yen ○円上がったら
+    order: 'stopFirst',                            // stopFirst 出品停止を先に / priceFirst 価格の出し直しを先に
+  };
+  // 「○% 以上」の比べ方: 割り算をせず、整数（百万分の 1 % 単位）に直して掛け算で比べる（浮動小数点の誤差で「ちょうど」が外れないように）。
+  // diff・base は同じ単位の整数（円、またはセント）。diff / base × 100 ≧ pct ⇔ diff × 100 × 1e6 ≧ round(pct × 1e6) × base
+  const PCT_SCALE = 1e6;
+  function pctAtLeast(diff, base, pct) { return diff * 100 * PCT_SCALE >= Math.round(pct * PCT_SCALE) * base; }
+  const cents = (v) => Math.round(v * 100);
+  function stopCond(it, rules) {
+    const st = rules.stop;
+    if (st.mode === 'off') return false;
+    const inc = it.cost - it.shown.cost;     // 円（整数）
+    if (!(inc > 0)) return false;
+    if (st.mode === 'pct') return it.shown.cost > 0 ? pctAtLeast(inc, it.shown.cost, st.value) : false;
+    return inc >= st.value;                   // 「○円以上」（ちょうど ○ 円でも停止）
+  }
+  // 価格の出し直し（○% 以上／○ドル以上）の判定。価格はセント（整数）にして比べる。ちょうどでも出し直す（以上）
+  function priceTrigger(shownPrice, calcPrice, price) {
+    if (shownPrice === null || calcPrice === null) return false;
+    const d = Math.abs(cents(calcPrice) - cents(shownPrice));
+    if (d === 0) return false;
+    if (price.mode === 'always') return true;
+    if (price.mode === 'pct') return pctAtLeast(d, cents(shownPrice), price.value);
+    if (price.mode === 'usd') return d >= Math.round(price.value * 100);
+    return false;
+  }
+  // 各商品について、ルールを適用したときに何が起きるか
+  function plan(sim, rows, rules) {
+    return rows.map((r) => {
+      const it = r.item;
+      const out = { row: r, category: 'none', apply: { price: false, policy: false, ship: false }, stop: false, review: false, note: '' };
+      if (it.stopped) { out.category = 'stoppedAlready'; return out; }
+      if (r.calc.price === null) { out.category = 'error'; out.note = r.calc.err || '価格が決まりません'; return out; }
+      const price = rules.price;
+      let priceApplies = false;
+      if (r.priceChanged) priceApplies = priceTrigger(it.shown.price, r.calc.price, price);
+      const stopHit = stopCond(it, rules);
+      if (rules.order === 'stopFirst' ? stopHit : (stopHit && !priceApplies)) { out.category = 'stop'; out.stop = true; return out; }
+      const shipChange = r.xChanged || r.eChanged;
+      if (shipChange && rules.ship === 'review') { out.category = 'review'; out.review = true; return out; }
+      const policyApplies = r.polChanged && (rules.policy === 'follow' || (rules.policy === 'withprice' && priceApplies));
+      const shipApplies = shipChange && rules.ship === 'follow';
+      out.apply = { price: priceApplies, policy: policyApplies, ship: shipApplies };
+      if (shipApplies) out.category = 'ship';
+      else if (priceApplies && policyApplies) out.category = 'both';
+      else if (priceApplies) out.category = 'price';
+      else if (policyApplies) out.category = 'policy';
+      return out;
+    });
+  }
+  const CATEGORY_LABEL = { none: '何も変わらない', price: '価格だけ変わる', policy: 'ポリシーだけ変わる', both: '価格とポリシーが両方変わる', ship: '配送方法（テンプレート）が変わる', stop: '出品停止になる', review: '要確認（止めて人が確認）', error: 'エラー・該当なし（変更できない）', stoppedAlready: '停止中（対象外）' };
+  // 書き換え件数: 価格とポリシーを同時に変える場合は 1 件の変更として数える
+  function countPlans(plans) {
+    const c = { none: 0, price: 0, policy: 0, both: 0, ship: 0, stop: 0, review: 0, error: 0, stoppedAlready: 0 };
+    plans.forEach((p) => { c[p.category]++; });
+    c.changes = c.price + c.policy + c.both + c.ship + c.stop;
+    return c;
+  }
+  // ルールなし（計算し直した値との素の違い）の件数
+  function countRaw(rows) {
+    const c = { total: rows.length, price: 0, policy: 0, ship: 0, ax: 0, err: 0, short: 0, over: 0, shortAmount: 0, overAmount: 0 };
+    rows.forEach((r) => {
+      if (r.item.stopped) return;
+      if (r.priceChanged) c.price++;
+      if (r.polChanged) c.policy++;
+      if (r.xChanged || r.eChanged) c.ship++;
+      if (r.axChanged) c.ax++;
+      if (r.errNow) c.err++;
+      if (r.taxGap && r.taxGap.kind === 'short') { c.short++; c.shortAmount += r.taxGap.amount; }
+      if (r.taxGap && r.taxGap.kind === 'over') { c.over++; c.overAmount += r.taxGap.amount; }
+    });
+    c.shortAmount = Math.round(c.shortAmount * 100) / 100; c.overAmount = Math.round(c.overAmount * 100) / 100;
+    return c;
+  }
+  // ルールを適用: 「いま出ている値」を更新する（＝ eBay に反映した想定）
+  function applyRules(sim, rules, date) {
+    const rows = evaluate(sim);
+    const plans = plan(sim, rows, rules);
+    const before = core(sim);
+    plans.forEach((p) => {
+      const it = p.row.item, c = p.row.calc, sh = it.shown;
+      if (p.stop) { it.stopped = true; return; }
+      if (p.apply.price) { sh.price = c.price; sh.R = c.R; sh.AD = c.AD; sh.S = c.S; sh.fx = c.fx; sh.cost = c.cost; sh.AX = c.AX; sh.taxArg = c.taxArg; sh.err = c.err; sh.priceErr = c.priceErr; }
+      if (p.apply.policy) { sh.O = c.O; sh.Oname = c.Oname; sh.band = c.band; sh.AX = c.AX; sh.taxArg = c.taxArg; }
+      if (p.apply.ship) { sh.X = c.X; sh.E = c.E; sh.Ename = c.Ename; sh.AE = c.AE; }
+    });
+    const counts = countPlans(plans);
+    if (date) sim.date = date;
+    logEvent(sim, date || sim.date, 'ルールを適用（変更 ' + counts.changes + ' 件: 価格のみ ' + counts.price + '・ポリシーのみ ' + counts.policy + '・両方 ' + counts.both + '・配送 ' + counts.ship + '・停止 ' + counts.stop + '・要確認 ' + counts.review + '）', before);
+    return counts;
+  }
+
+  // ============================================================
+  // 5. 為替の目安: 為替が動いたとき、何件のポリシー・価格が変わるか（いま出ている値との比較）
+  // ============================================================
+  function fxSensitivity(sim, deltas) {
+    return deltas.map((d) => {
+      const fx = Math.round((sim.fx + d) * 1e6) / 1e6;
+      const c = { delta: d, fx, policy: 0, price: 0, ship: 0, err: 0 };
+      sim.items.forEach((it) => {
+        if (it.stopped) return;
+        const calc = snap(sim.env, fx, it.D, it.cost), sh = it.shown;
+        if (String(sh.O) !== String(calc.O)) c.policy++;
+        if (sh.price !== null && calc.price !== null && Math.abs(calc.price - sh.price) >= 0.005) c.price++;
+        if (sh.X !== calc.X || String(sh.E) !== String(calc.E)) c.ship++;
+        if (calc.err) c.err++;
+      });
+      return c;
+    });
+  }
+
+  // ============================================================
+  // 6. 見本の出品中リスト（見本のタグ設定。数値は engine.js で出す）
+  // ============================================================
+  // タグ D について、仕入れ値を 1 円ずつ動かして、ポリシーが切り替わる境目（その仕入れ値）を数える
+  function policyBoundaries(env, fx, D, from, to, max) {
+    const ctx = ctxOf(env, fx);
+    const out = [];
+    let prev = L.calcRow(ctx, D, from).O;
+    for (let c = from + 1; c <= to && out.length < max; c++) {
+      const o = L.calcRow(ctx, D, c);
+      if (String(o.O) !== String(prev)) { out.push(c); prev = o.O; }
+    }
+    return out;
+  }
+  function sampleEntries(state) {
+    const env = envFromState(state), fx = state.settings.S.C2;
+    const list = [];
+    const add = (D, cost, note) => list.push({ D, cost, note });
+    const hasTag = (n) => env.tags.some((t) => t.A === n);
+    if (hasTag('サンプルA')) {
+      const b = policyBoundaries(env, fx, 'サンプルA', 2000, 14000, 3);
+      b.forEach((c, i) => add('サンプルA', c - 1, 'ポリシーの帯の境目の 1 円手前（' + (i + 1) + ' つ目）。仕入れ値が 1 円上がる、または為替が少し下がると、次の帯のポリシーに変わる'));
+      add('サンプルA', 14999, '送料切替基準（15,000 円）の 1 円手前。1 円上がると配送がエコノミー（EP）から速達便（CF）に変わり、テンプレートも変わる');
+      add('サンプルA', 15000, '送料切替基準ちょうど。高価格配送（速達便）になっている');
+    }
+    if (hasTag('サンプルB')) { add('サンプルB', 5000, '利益額方式。Profit_Amounts の区切り（5,000 と 5,001）の手前。1 円上がると利益額・送料の表の行が変わる'); add('サンプルB', 8000, '利益額方式（通常）'); }
+    if (hasTag('サンプルC')) { add('サンプルC', 1000, '固定送料。Profit_Amounts の区切り（1,000 と 1,001）の手前。1 円上がると送料が変わる'); add('サンプルC', 3000, '固定送料（通常）'); }
+    if (hasTag('サンプルD')) add('サンプルD', 3000, '関税免除（DDP_TF_0500。EP×中古）。ポリシーは免除用で、為替が動いても帯のポリシーには変わらない');
+    if (hasTag('サンプルE')) { add('サンプルE', 3000, 'DDP（関税込みの価格）。ポリシーは DDP 用で、価格には関税が含まれる'); add('サンプルE', 20000, 'DDP・高価格配送（速達便）'); }
+    if (hasTag('サンプルF')) {
+      add('サンプルF', 4000, 'CE（通関手数料が加わる）・送料上限カテゴリ Video Games（$20）');
+      const bf = policyBoundaries(env, fx, 'サンプルF', 2000, 14000, 1);
+      bf.forEach((c) => add('サンプルF', c - 1, '送料上限カテゴリ Video Games（$20）の帯の境目の 1 円手前'));
+      add('サンプルF', 40000, '上限カテゴリ（$20）を超える想定関税。上限内で最大の帯になる');
+    }
+    return list;
+  }
+
+  return {
+    clone, envFromState, ctxOf, resolveFx, snap, shipType, policyInfo, templateName,
+    create, register, clearItems, setFx, setCost, reflectEnv, undo, reset,
+    evaluate, taxGapOf, pctAtLeast, priceTrigger, DEFAULT_RULES, plan, countPlans, countRaw, CATEGORY_LABEL, applyRules, fxSensitivity, policyBoundaries, sampleEntries,
+  };
+});
+
+</script>
+<script>
 // app.js: 見本ツールの画面（DOM の組み立てとイベント）。計算・取り込み・照合は engine.js / logic.js。
 // 外部への通信はしません（通信の命令も外部ファイルの読み込みもありません）。
 (function () {
@@ -1935,6 +2353,8 @@ footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13p
     $('btnBatchCopy').addEventListener('click', (e) => copyText(resultsTable2Tsv(res), e.target));
     $('btnBatchDl').addEventListener('click', () => download('calc-result.tsv', resultsTable2Tsv(res)));
     eagleExportBox('batchEagle', res);
+    $('batchOut').insertAdjacentHTML('beforeend', '<p><button class="btn ghost" id="btnBatchToSim">この結果を「出品中」として (F) に登録</button></p>');
+    $('btnBatchToSim').addEventListener('click', () => registerFromResults(res));
   }
   $('btnBatch').addEventListener('click', runBatch);
   $('btnBatchSample').addEventListener('click', () => { $('batchIn').value = ['サンプルA\t5000\tshiire-1\tCODE-001\tVintage item sample\tUsed, good condition.', 'サンプルB\t8000', 'サンプルC\t3000', 'サンプルD\t3000', 'サンプルE\t3000', 'サンプルF\t4000', '未登録のタグ\t5000'].join('\n'); });
@@ -1955,6 +2375,8 @@ footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13p
     h += '</tbody></table></div>';
     $('v5Out').innerHTML = h;
     eagleExportBox('v5Eagle', res);
+    $('v5Out').insertAdjacentHTML('beforeend', '<p><button class="btn ghost" id="btnV5ToSim">この結果を「出品中」として (F) に登録</button></p>');
+    $('btnV5ToSim').addEventListener('click', () => registerFromResults(res));
   }
   $('btnV5').addEventListener('click', runV5);
   $('v5File').addEventListener('change', (e) => { const f = e.target.files[0]; if (f) readFileText(f, (t) => { $('v5In').value = t; runV5(); }); e.target.value = ''; });
@@ -2024,7 +2446,9 @@ footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13p
   function runRecon() {
     const res = L.reconcile(state, $('reHeads').value, $('reIn').value, {});
     lastRecon = res;
-    const box = $('reOut');
+    renderRecon(res, $('reOut'), 're', $('reAll').checked);
+  }
+  function renderRecon(res, box, pfx, showAll) {
     if (res.errors.length) { box.innerHTML = msgBox('err', res.errors.map(esc).join('<br>')); return; }
     const s = res.summary;
     let h = '';
@@ -2034,7 +2458,7 @@ footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13p
     if (res.headerSkipped) h += msgBox('note', esc(res.headerSkipped.line + ' 行目を見出しとして読み飛ばしました（I 列が数値でないため）: ' + res.headerSkipped.text));
     h += '<div class="stat"><div><b>' + s.total + '</b><span>行</span></div><div class="ok"><b>' + s.match + '</b><span>一致</span></div><div class="ng"><b>' + s.mismatch + '</b><span>不一致</span></div><div><b>' + s.skipped + '</b><span>比べなかった</span></div></div>';
     h += '<div class="tbl-wrap"><table><thead><tr><th>列</th><th>比べた件数</th><th>不一致</th></tr></thead><tbody>' + s.byColumn.map((c) => '<tr class="' + (c.mismatch ? 'row-err' : '') + '"><td>' + esc(c.col) + ' ' + esc(L.COL_NAME[c.col] || '') + '</td><td class="num">' + c.compared + '</td><td class="num">' + c.mismatch + '</td></tr>').join('') + '</tbody></table></div>';
-    const all = $('reAll').checked;
+    const all = showAll;
     const list = res.rows.filter((r) => all || r.status !== 'match');
     const CAP = 300;
     h += '<h4>' + (all ? '全ての行' : '不一致・比べなかった行') + '（' + list.length + ' 行' + (list.length > CAP ? '。画面には先頭の ' + CAP + ' 行だけ。全件は書き出しで' : '') + '）</h4>';
@@ -2050,10 +2474,10 @@ footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13p
       });
       h += '</tbody></table></div>';
     }
-    h += '<p><button class="btn" id="btnReCopy">結果をコピー（タブ区切り）</button> <button class="btn ghost" id="btnReDl">結果を保存（.tsv）</button></p>';
+    h += '<p><button class="btn" id="' + pfx + 'Copy">結果をコピー（タブ区切り）</button> <button class="btn ghost" id="' + pfx + 'Dl">結果を保存（.tsv）</button></p>';
     box.innerHTML = h;
-    $('btnReCopy').addEventListener('click', (e) => copyText(toTsv(L.reconcileToTable(res)), e.target));
-    $('btnReDl').addEventListener('click', () => download('reconcile.tsv', toTsv(L.reconcileToTable(res))));
+    $(pfx + 'Copy').addEventListener('click', (e) => copyText(toTsv(L.reconcileToTable(res)), e.target));
+    $(pfx + 'Dl').addEventListener('click', () => download('reconcile.tsv', toTsv(L.reconcileToTable(res))));
   }
   $('btnRe').addEventListener('click', runRecon);
   $('reAll').addEventListener('change', () => { if (lastRecon) runRecon(); });
@@ -2063,8 +2487,133 @@ footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13p
     $('reIn').value = L.sheetPasteFromCalc(state, heads, items);
   });
 
+  // ============================================================
+  // (F) 本番シミュレーション
+  // ============================================================
+  const SM = window.EagleSim;
+  let sim = null;
+  let simSel = {};
+  function simDateVal() { return $('simDate').value || todayStr(); }
+  function addDay(s) { const p = (s || todayStr()).split('-').map(Number); const d = new Date(p[0], p[1] - 1, p[2] + 1); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function ensureSim() { if (!sim) sim = SM.create(state, simDateVal()); return sim; }
+  function readRules() {
+    const num = (id) => { const v = Number(L.nfkc($(id).value).replace(/,/g, '')); return isFinite(v) ? v : 0; };
+    return { price: { mode: $('rPrice').value, value: num('rPriceVal') }, policy: $('rPolicy').value, ship: $('rShip').value, stop: { mode: $('rStop').value, value: num('rStopVal') }, order: $('rOrder').value };
+  }
+  function registerEntries(entries, label) {
+    if (state.tags.length === 0) { $('simMsg').innerHTML = msgBox('warn', 'タグ設定が空です。(A) でタグ設定を貼り付けるか、見本を読み込んでください。'); return; }
+    ensureSim();
+    const first = sim.items.length === 0;
+    const n = SM.register(sim, state, entries, simDateVal());
+    simSel = {};
+    $('simMsg').innerHTML = msgBox(n ? 'ok' : 'warn', label + ': ' + n + ' 件を出品中として登録しました（為替 ' + sim.fx + ' 円）。' + (first ? '(A)(B)(D) の内容と為替を写し取りました。' : '既に登録済みの商品がある間は、写し取った設定・為替のまま計算します（変えるには「タグ設定の変更を反映」「為替を更新」）。') + (entries.length - n ? ' 読めなかった ' + (entries.length - n) + ' 行は除きました。' : ''));
+    renderSim();
+  }
+  function registerFromResults(results) {
+    const entries = [], skippedN = results.filter((r) => !(r.out && typeof r.out.listing === 'number')).length;
+    results.forEach((r) => { if (r.out && typeof r.out.listing === 'number') entries.push({ D: r.in.D, cost: r.in.I, supplierCode: r.in.supplierCode, title: r.in.title }); });
+    registerEntries(entries, '(C) の結果から（価格が決まらない ' + skippedN + ' 件は除く）');
+    document.querySelector('[data-tab="F"]').click();
+  }
+  $('btnSimSample').addEventListener('click', () => {
+    if (state.tags.length === 0) state.tags = L.sampleTags(), renderTagTable(), refreshTagDependents();
+    if (sim && sim.items.length) { SM.clearItems(sim, simDateVal()); }
+    registerEntries(SM.sampleEntries(state), '見本');
+  });
+  $('btnSimPaste').addEventListener('click', () => {
+    const rows = L.parseBatch($('simPaste').value);
+    if (!rows.length) { $('simMsg').innerHTML = msgBox('warn', '行がありません。「タグ」と「仕入れ値」をタブで区切った行を貼り付けてください。'); return; }
+    registerEntries(rows.map((r) => ({ D: r.D, cost: r.I, supplierCode: r.supplierCode, title: r.title })), '貼り付け');
+  });
+  $('btnSimClear').addEventListener('click', () => { if (sim) { SM.clearItems(sim, simDateVal()); } simSel = {}; $('simMsg').innerHTML = msgBox('ok', '出品中リストを空にしました。'); renderSim(); });
+  function afterEvent() { if ($('simAuto').checked && sim && sim.items.length) SM.applyRules(sim, readRules(), simDateVal()); renderSim(); }
+  function needItems() { if (!sim || !sim.items.length) { $('simMsg').innerHTML = msgBox('warn', '出品中の商品がありません。先に登録してください。'); return false; } return true; }
+  $('btnSimFx').addEventListener('click', () => {
+    if (!needItems()) return;
+    const v = $('simFxVal').value;
+    if (L.trimAll(v) === '') { $('simFxMsg').innerHTML = msgBox('warn', '新しい為替を入れてください（欄の薄い文字「例: 152」は見本で、入力されていません）。'); return; }
+    const r = SM.setFx(sim, $('simFxDate').value || todayStr(), L.nfkc(v).replace(/,/g, ''), sim.env.S.A2);
+    $('simFxMsg').innerHTML = msgBox(r.source === 'input' ? 'ok' : 'warn', '為替を ' + r.value + ' 円にしました。' + esc(r.note));
+    $('simFxDate').value = addDay($('simFxDate').value || todayStr());
+    afterEvent();
+  });
+  $('btnSimCost').addEventListener('click', () => {
+    if (!needItems()) return;
+    const raw = L.nfkc($('simCostVal').value).replace(/,/g, '');
+    if (!/^-?\d+(\.\d+)?$/.test(raw)) { $('simMsg').innerHTML = msgBox('warn', '値を数値で入れてください（欄の薄い文字は見本です）。'); return; }
+    const ids = $('simCostTarget').value === 'all' ? sim.items.map((x) => x.id) : sim.items.filter((x) => simSel[x.id]).map((x) => x.id);
+    if (!ids.length) { $('simMsg').innerHTML = msgBox('warn', '表のチェックで商品を選ぶか、対象を「全部の商品」にしてください。'); return; }
+    SM.setCost(sim, ids, $('simCostMode').value, Number(raw), $('simFxDate').value || todayStr());
+    $('simMsg').innerHTML = msgBox('ok', ids.length + ' 件の仕入れ価格を変更しました。');
+    afterEvent();
+  });
+  $('btnSimEnv').addEventListener('click', () => { if (!needItems()) return; SM.reflectEnv(sim, state, simDateVal()); $('simMsg').innerHTML = msgBox('ok', '(A)(B)(D) の現在の内容を反映しました（為替は ' + sim.fx + ' 円のまま）。'); afterEvent(); });
+  $('btnSimUndo').addEventListener('click', () => { if (sim && SM.undo(sim)) { $('simMsg').innerHTML = msgBox('ok', '直前の出来事を元に戻しました。'); } else $('simMsg').innerHTML = msgBox('warn', '元に戻せる出来事がありません。'); renderSim(); });
+  $('btnSimReset').addEventListener('click', () => { if (sim && SM.reset(sim)) { simSel = {}; $('simMsg').innerHTML = msgBox('ok', '登録直後の状態に戻しました（履歴は消えます）。'); } else $('simMsg').innerHTML = msgBox('warn', 'やり直す元の状態がありません。'); renderSim(); });
+  $('btnSimApply').addEventListener('click', () => { if (!needItems()) return; const c = SM.applyRules(sim, readRules(), simDateVal()); $('simMsg').innerHTML = msgBox('ok', 'ルールを適用しました（変更 ' + c.changes + ' 件。「いま出ている値」を更新＝ eBay に反映した想定）。'); renderSim(); });
+  ['rPrice', 'rPriceVal', 'rPolicy', 'rShip', 'rStop', 'rStopVal', 'rOrder'].forEach((id) => $(id).addEventListener('change', renderSim));
+  $('simList').addEventListener('change', (e) => { const id = e.target.dataset.sel; if (id !== undefined) simSel[id] = e.target.checked; if (e.target.dataset.selall !== undefined) { sim.items.forEach((x) => { simSel[x.id] = e.target.checked; }); renderSim(); } });
+
+  const polTxt = (s) => (s.O === '' || s.O === undefined ? '(なし)' : esc(s.O) + (s.Oname ? '<br><span class="sub">' + esc(s.Oname) + (s.band ? '（帯 ' + s.band[0] + '〜' + s.band[1] + '）' : '') + '</span>' : ''));
+  const money = (v) => (v === null || v === undefined ? '—' : v);
+  function renderSim() {
+    if (!sim || !sim.items.length) {
+      $('simList').innerHTML = '<p class="muted">出品中の商品がありません。見本ボタンか貼り付けで登録してください。</p>'; $('simSummary').innerHTML = ''; $('simChanges').innerHTML = ''; renderHistory(); return;
+    }
+    const rows = SM.evaluate(sim), rules = readRules(), plans = SM.plan(sim, rows, rules);
+    // いま出ている値
+    let h = '<p class="muted">現在: 為替 <b>' + sim.fx + '</b> 円 ／ 出品中 ' + sim.items.length + ' 件 ／ 停止中 ' + sim.items.filter((x) => x.stopped).length + ' 件</p><div class="tbl-wrap"><table><thead><tr><th><input type="checkbox" data-selall="1" title="全部選ぶ"></th><th>ID</th><th>タグ</th><th>登録日</th><th>仕入れ値（いま）</th><th>為替（記録）</th><th>出品価格</th><th>販売価格（R）</th><th>想定関税（AD）</th><th>ポリシー</th><th>配送方法（X）</th><th>テンプレート（E）</th><th>DDP/DDU</th><th>状態・メモ</th></tr></thead><tbody>';
+    sim.items.forEach((it) => {
+      const s = it.shown;
+      h += '<tr><td><input type="checkbox" data-sel="' + it.id + '"' + (simSel[it.id] ? ' checked' : '') + '></td><td class="num">' + it.id + '</td><td>' + esc(it.D) + '</td><td class="num">' + esc(it.regDate) + '</td><td class="num">' + it.cost + (it.cost !== s.cost ? '<br><span class="sub">出品時 ' + s.cost + '</span>' : '') + '</td><td class="num">' + s.fx + '</td><td class="num strong">' + money(s.price) + (s.price === null ? esc(s.priceErr) : '') + '</td><td class="num">' + money(s.R) + '</td><td class="num">' + money(s.AD) + '</td><td>' + polTxt(s) + '</td><td class="num">' + esc(s.X) + '</td><td class="num">' + esc(s.E) + '<br><span class="sub">' + esc(s.Ename) + '</span></td><td>' + esc(s.AX) + '</td><td class="wide">' + (it.stopped ? '<b>出品停止中</b> ' : '') + esc(it.note) + '</td></tr>';
+    });
+    $('simList').innerHTML = h + '</tbody></table></div>';
+    // 書き換え件数
+    const cnt = SM.countPlans(plans), raw = SM.countRaw(rows);
+    let sh = '<div class="stat"><div><b>' + cnt.changes + '</b><span>eBay の出品内容の変更（ルール適用後）</span></div><div><b>' + cnt.review + '</b><span>要確認</span></div><div class="ng"><b>' + raw.short + '</b><span>関税が足りない商品</span></div><div><b>' + raw.over + '</b><span>関税を多く受け取る商品</span></div></div>';
+    sh += '<div class="tbl-wrap"><table><thead><tr><th>ルール適用後の内訳</th><th>件数</th></tr></thead><tbody>' + ['none', 'price', 'policy', 'both', 'ship', 'stop', 'review', 'error', 'stoppedAlready'].map((k) => '<tr><td>' + esc(SM.CATEGORY_LABEL[k]) + '</td><td class="num">' + cnt[k] + '</td></tr>').join('') + '<tr><td><b>変更件数の合計（何も変わらない・要確認・エラー・停止中を除く）</b></td><td class="num strong">' + cnt.changes + '</td></tr></tbody></table></div>';
+    sh += '<p class="muted">ルールなし（計算し直した値との違い）: 価格が変わる ' + raw.price + ' 件 ／ ポリシーが変わる ' + raw.policy + ' 件 ／ 配送方法・テンプレートが変わる ' + raw.ship + ' 件 ／ DDP/DDU が変わる ' + raw.ax + ' 件 ／ エラー・該当なし ' + raw.err + ' 件。</p>';
+    sh += '<ul class="muted"><li>数え方: 価格とポリシーを同時に変える商品は 1 件の変更として数えます（同じ変更にまとめて送れる想定。EAGLE の実際の送り方は未確認）。配送方法（テンプレート）が変わる商品は、価格・ポリシーも変わっても 1 件です。</li><li>「出品停止」「要確認」の商品は他の変更を行いません。出品停止は、EAGLE の出品テンプレートの「仕入価格が上がったら出品停止」設定に当たる動きの想定です（効き方の詳細は未確認）。</li></ul>';
+    if (raw.short || raw.over) sh += '<div class="msg warn"><b>いま出ているポリシーのままだと起きること（事実: 帯の規則はポリシー選択と同じ）</b><br>ポリシーの金額（帯の上限）は送料欄で受け取る関税の額です。計算し直した想定関税が帯を超えた商品は「送料欄で受け取る関税が足りない」、帯より小さくなった商品は「多く受け取っている」状態です。足りない ' + raw.short + ' 件（差額の合計 ' + raw.shortAmount + ' ドル）／ 多く受け取っている ' + raw.over + ' 件（合計 ' + raw.overAmount + ' ドル）。ポリシーを据え置いたとき・ルールを適用しないときに、この差が残ります。</div>';
+    $('simSummary').innerHTML = sh;
+    // 変化の一覧
+    let ch = '<div class="tbl-wrap"><table class="recon"><thead><tr><th>ID</th><th>タグ</th><th>仕入れ値</th><th>出品価格<br><span class="sub">いま出ている → 計算し直し</span></th><th>ポリシー<br><span class="sub">いま出ている → 計算し直し</span></th><th>配送方法</th><th>テンプレート</th><th>DDP/DDU</th><th>エラー等</th><th>関税の過不足</th><th>ルールの結果</th></tr></thead><tbody>';
+    plans.forEach((p) => {
+      const r = p.row, it = r.item, s = it.shown, c = r.calc;
+      const priceCell = (s.price === null ? esc(s.priceErr || '—') : s.price) + ' → ' + (c.price === null ? esc(c.priceErr || '—') : c.price) + (r.priceDiff !== null && r.priceChanged ? '<br><span class="sub">差 ' + (r.priceDiff > 0 ? '+' : '') + r.priceDiff + '（' + (r.pricePct > 0 ? '+' : '') + (Math.round(r.pricePct * 100) / 100) + '%）</span>' : '');
+      const polCell = polTxt(s) + '<br>→ ' + polTxt(c) + (r.polChanged ? '<br><span class="sub">' + (r.bandCrossed ? '帯をまたいだ' : '同じ帯') + '</span>' : '');
+      const gap = r.taxGap ? (r.taxGap.kind === 'ddp' ? 'DDP に変わったので過不足の対象外（送料欄で関税を受け取らない型）' : r.taxGap.kind === 'short' ? '<b>送料欄で受け取る関税が足りない</b>（想定関税 ' + r.taxGap.arg + ' ＞ 帯の上限 ' + r.taxGap.hi + '。差額 ' + r.taxGap.amount + ' ドル）' : '多く受け取っている（想定関税 ' + r.taxGap.arg + ' ＜ 帯の下限。帯の上限 ' + r.taxGap.hi + ' との差 ' + r.taxGap.amount + ' ドル）') : '';
+      const rc = (flag) => (flag ? 'chg' : '');
+      ch += '<tr><td class="num">' + it.id + '</td><td>' + esc(it.D) + '</td><td class="num">' + it.cost + '</td><td class="num ' + rc(r.priceChanged) + '">' + priceCell + '</td><td class="' + rc(r.polChanged) + '">' + polCell + '</td><td class="num ' + rc(r.xChanged) + '">' + esc(s.X) + ' → ' + esc(c.X) + (r.shipTypeChanged ? '<br><span class="sub">' + esc(SM.shipType(s.X)) + '→' + esc(SM.shipType(c.X)) + '</span>' : '') + '</td><td class="' + rc(r.eChanged) + '">' + esc(s.E) + ' → ' + esc(c.E) + '</td><td class="' + rc(r.axChanged) + '">' + esc(s.AX) + ' → ' + esc(c.AX) + '</td><td class="' + (r.errNow ? 'bad' : '') + '">' + esc(r.errNow) + '</td><td class="' + (r.taxGap && r.taxGap.kind !== 'ddp' ? (r.taxGap.kind === 'short' ? 'bad' : 'chg') : '') + '">' + gap + '</td><td class="' + (p.category === 'none' ? '' : (p.category === 'stop' || p.category === 'review' || p.category === 'error' ? 'bad' : 'chg')) + '">' + esc(SM.CATEGORY_LABEL[p.category]) + (p.apply.price || p.apply.policy || p.apply.ship ? '<br><span class="sub">' + [p.apply.price ? '価格' : '', p.apply.policy ? 'ポリシー' : '', p.apply.ship ? '配送・テンプレート' : ''].filter(Boolean).join('・') + 'を変更</span>' : '') + '</td></tr>';
+    });
+    $('simChanges').innerHTML = ch + '</tbody></table></div>';
+    renderHistory();
+  }
+  function renderHistory() {
+    if (!sim || !sim.history.length) { $('simHistory').innerHTML = '<p class="muted">まだ出来事はありません。</p>'; return; }
+    $('simHistory').innerHTML = '<ol>' + sim.history.map((h) => '<li><span class="num">' + esc(h.date) + '</span> ' + esc(h.text) + '</li>').join('') + '</ol>';
+  }
+  // シートとの確認
+  function simReState() { return { tags: sim.env.tags, templates: sim.env.templates, importPolicies: sim.env.importPolicies, policyMasterB: sim.env.policyMasterB, policyMode: state.policyMode, templateMode: state.templateMode, settings: { S: Object.assign({}, sim.env.S, { C2: sim.fx }), profitCalc: sim.env.profitCalc, shippingCalc: sim.env.shippingCalc, profitAmounts: sim.env.profitAmounts } }; }
+  $('btnSimRe').addEventListener('click', () => {
+    if (!needItems()) return;
+    const res = L.reconcile(simReState(), $('simHeads').value, $('simReIn').value, {});
+    renderRecon(res, $('simReOut'), 'simRe', false);
+    if (!res.errors.length) $('simReOut').insertAdjacentHTML('afterbegin', msgBox('note', '比べている計算: 為替 ' + sim.fx + ' 円・出品中リストを作ったときのタグ設定／一覧（「タグ設定の変更を反映」したもの）。貼り付けた行の D（タグ）と I（仕入れ値）から計算し直しています。'));
+  });
+  $('btnSimReFill').addEventListener('click', () => {
+    if (!needItems()) return;
+    const heads = L.parseColumnHeads($('simHeads').value);
+    $('simReIn').value = L.sheetPasteFromCalc(simReState(), heads, sim.items.map((x) => ({ D: x.D, I: x.cost })));
+  });
+  $('btnSimFxTable').addEventListener('click', () => {
+    if (!needItems()) return;
+    const rows = SM.fxSensitivity(sim, [-5, -3, -1, 1, 3, 5]);
+    $('simFxTable').innerHTML = '<div class="tbl-wrap"><table><thead><tr><th>為替の動き</th><th>為替（円）</th><th>ポリシーが変わる件数</th><th>価格が変わる件数</th><th>配送・テンプレートが変わる件数</th><th>エラー等</th></tr></thead><tbody>' + rows.map((r) => '<tr><td class="num">' + (r.delta > 0 ? '+' : '') + r.delta + ' 円</td><td class="num">' + r.fx + '</td><td class="num strong">' + r.policy + ' / ' + sim.items.length + '</td><td class="num">' + r.price + '</td><td class="num">' + r.ship + '</td><td class="num">' + r.err + '</td></tr>').join('') + '</tbody></table></div><p class="muted">いま出ている値との比較です（停止中の商品は除く）。為替 100〜200 円の範囲の確認はしていません。</p>';
+  });
+
   // ---------- 起動 ----------
-  $('skuDate').value = todayStr();
+  $('skuDate').value = todayStr(); $('simDate').value = todayStr(); $('simFxDate').value = todayStr();
   renderTagTable(); renderIssues(); renderSettings(); renderPolicies(); renderV5Map(); fillTagList();
 })();
 
