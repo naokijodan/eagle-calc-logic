@@ -220,8 +220,8 @@ footer.end { padding: 30px 0 60px; text-align: center; color: var(--ink-soft); f
 </header>
 <nav class="wrap" aria-label="目次">
   <div class="toc-top">
-    <div class="toc-box easy"><h2>前半　やさしい解説</h2><ol><li><a href="#e1">この計算は、何を決めているの？</a></li><li><a href="#e2">出品価格は「残り」で決まります</a></li><li><a href="#e3">数字の例を、1つ通しで</a></li><li><a href="#e4">関税の考え方</a></li><li><a href="#e5">送料の欄には「上限」があります</a></li><li><a href="#e6">関税の受け取り方は3つの型</a></li><li><a href="#e7">タグ1つで決まること</a></li><li><a href="#e8">配送方法の切り替え</a></li><li><a href="#e9">Shipping Policy の選ばれ方</a></li><li><a href="#e10">つまずきやすい点</a></li></ol></div>
-    <div class="toc-box dev"><h2>後半　<a href="#dev">開発者向け仕様</a></h2><ul><li><a href="#d-2">移植する人が最初に知っておくべきこと</a></li><li><a href="#s0">0. 読み方（必ず最初に）</a></li><li><a href="#s1">1. この文書の範囲と元になったコード</a></li><li><a href="#s2">2. 全体の流れ</a></li><li><a href="#s3">3. データ定義</a></li><li><a href="#s4">4. 計算手順（V5）</a></li><li><a href="#s5">5. シッピングポリシー選択のアルゴリズム</a></li><li><a href="#s6">6. DDP / DDU / 関税免除の分岐表（V5・式側）</a></li><li><a href="#s7">7. エラーと既定値への倒れ方の一覧</a></li><li><a href="#s8_2">8. 計算例（通しの例）</a></li><li><a href="#s9">9. 既知の問題・未確認の点</a></li><li><a href="#s10">10. 出品管理ツールに持たせる設定の一覧</a></li><li><a href="#s11">11. タグ設定の一括登録の形式</a></li><li><a href="#d-82">付録</a></li></ul></div>
+    <div class="toc-box easy"><h2>前半　やさしい解説</h2><ol><li><a href="#e1">この計算は、何を決めているの？</a></li><li><a href="#e2">出品価格は「残り」で決まります</a></li><li><a href="#e3">数字の例を、1つ通しで</a></li><li><a href="#e4">関税の考え方</a></li><li><a href="#e5">送料の欄には「上限」があります</a></li><li><a href="#e6">関税の受け取り方は3つの型</a></li><li><a href="#e7">タグ1つで決まること</a></li><li><a href="#e8">配送方法の切り替え</a></li><li><a href="#e9">テンプレートの見分け方</a></li><li><a href="#e10">Shipping Policy の選ばれ方</a></li><li><a href="#e11">つまずきやすい点</a></li></ol></div>
+    <div class="toc-box dev"><h2>後半　<a href="#dev">開発者向け仕様</a></h2><ul><li><a href="#d-2">移植する人が最初に知っておくべきこと</a></li><li><a href="#s0">0. 読み方（必ず最初に）</a></li><li><a href="#s1">1. この文書の範囲と元になったコード</a></li><li><a href="#s2">2. 全体の流れ</a></li><li><a href="#s3">3. データ定義</a></li><li><a href="#s4">4. 計算手順（V5）</a></li><li><a href="#s5">5. シッピングポリシー選択のアルゴリズム</a></li><li><a href="#s6">6. DDP / DDU / 関税免除の分岐表（V5・式側）</a></li><li><a href="#s7">7. エラーと既定値への倒れ方の一覧</a></li><li><a href="#s8_2">8. 計算例（通しの例）</a></li><li><a href="#s9">9. 既知の問題・未確認の点</a></li><li><a href="#s10">10. 出品管理ツールに持たせる設定の一覧</a></li><li><a href="#s11">11. タグ設定の一括登録の形式</a></li><li><a href="#d-85">付録</a></li></ul></div>
   </div>
 </nav>
 <div class="easy" id="easy">
@@ -486,13 +486,63 @@ footer.end { padding: 30px 0 60px; text-align: center; color: var(--ink-soft); f
   <ul class="plain">
     <li>基準額はタグごとに決められます。タグに書いていないときは、共通の設定の値が使われます。</li>
     <li>安い側の配送方法が「NONE」のタグは、仕入れ値にかかわらず、いつも速達便になります。</li>
-    <li>エコノミーか速達便かで、使うテンプレートと Shipping Policy の種類も変わります。</li>
+    <li>エコノミーか速達便かで、使うテンプレートと Shipping Policy の種類も変わります（テンプレートの見分け方は9）。</li>
   </ul>
   <p class="more"><a href="#s4-3">くわしくは開発者向け 4.3 節（配送方法）</a>／<a href="#s4-13">4.13 節（テンプレート）</a></p>
 </section>
 
 <section id="e9">
-  <h2><span class="no">9</span>Shipping Policy は「関税の帯」で選ばれます</h2>
+  <h2><span class="no">9</span>テンプレートは、名前から見分けられます</h2>
+  <p>EAGLE の「出品テンプレート」の名前に、<strong>「中古／新品」</strong>と<strong>「エコノミー／クーリエ（速達）」</strong>の言葉を入れておくと、シートがその言葉を見分けて「標準名」を作ります。標準名は、設定メニューの「検証→マスター反映」や「テンプレート・ポリシー再取得」（インポート用の検証）を実行したときに、テンプレートの一覧（Import_Templates シート）の「標準名」の列（C 列）に作られます。そのうえでシートは商品ごとに、タグ・商品の状態・配送方法から同じ形の標準名を作って、一致するテンプレートの番号（ID）を探します。</p>
+  <div class="fig">
+    <div class="ttl">テンプレートの名前から標準名ができるまで（例）</div>
+    <div class="flow">
+      <div class="box c-sun"><span class="big">一般 中古 エコノミー</span><span class="sm">EAGLE の出品テンプレートの名前</span></div>
+      <div class="arr">→</div>
+      <div class="box c-mint"><span class="big">言葉を見分ける</span><span class="sm">中古 → used ／ エコノミー → eco</span></div>
+      <div class="arr">→</div>
+      <div class="box c-peach"><span class="big">一般</span><span class="sm">見分けた言葉を取り除いた残り</span></div>
+      <div class="arr">→</div>
+      <div class="box c-pink"><span class="big">Template_一般_used_eco</span><span class="sm">標準名（この名前で探します）</span></div>
+    </div>
+    <div class="cap">標準名は、Template_ ＋ 残りの名前 ＋ _new か _used ＋ _eco か _xp、という形です。残りが空のときは「一般汎用」になります（例: 「中古 エコノミー」→ Template_一般汎用_used_eco）。</div>
+  </div>
+  <h3>見分ける言葉</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>見分けること</th><th>結果</th><th>使える言葉</th></tr></thead>
+    <tbody>
+      <tr><td>配送（先に見分けます）</td><td>エコノミー系（eco）</td><td>エコノミー／Economy・economy／小形包装物／Small Packet</td></tr>
+      <tr><td>配送（エコノミー系の言葉が無いときだけ）</td><td>速達系（xp）</td><td>クーリエ／クリエ／<strong>XP（大文字だけ）</strong>／速達／Express・express</td></tr>
+      <tr><td>商品の状態（配送のあとで見分けます）</td><td>新品（new）</td><td>新品／New・new</td></tr>
+      <tr><td>商品の状態（新品の言葉が無いときだけ）</td><td>中古（used）</td><td>中古／Used・used</td></tr>
+    </tbody>
+  </table></div>
+  <p>見分けた言葉は、名前から<strong>すべて取り除かれます</strong>。残った部分が「テンプレートの種類の名前」です。</p>
+  <h3>タグ設定の「テンプレート名」には、残りの部分を書きます</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>EAGLE の出品テンプレートの名前</th><th>できる標準名</th><th>タグ設定のテンプレート名に書くもの</th></tr></thead>
+    <tbody>
+      <tr><td>一般 中古 エコノミー</td><td class="num">Template_一般_used_eco</td><td>一般</td></tr>
+      <tr><td>ゲーム 中古 クーリエ</td><td class="num">Template_ゲーム_used_xp</td><td>ゲーム</td></tr>
+      <tr><td>トレカGraded PSA10 中古 エコノミー</td><td class="num">Template_トレカGraded PSA10_used_eco</td><td>トレカGraded PSA10</td></tr>
+      <tr><td>時計 中古 速達</td><td class="num">Template_時計_used_xp</td><td>時計</td></tr>
+      <tr><td>中古 エコノミー</td><td class="num">Template_一般汎用_used_eco</td><td>一般汎用（残りが空のとき）</td></tr>
+    </tbody>
+  </table></div>
+  <p>タグの状態が中古で、配送がエコノミー系（EP または CE）の商品なら、「一般汎用」のタグは Template_一般汎用_used_eco という名前の出品テンプレートを探します。速達系（CF・CD・EL）の商品なら、探す名前の最後は _xp です。新品・中古、エコノミー系・速達系の組み合わせごとに、出品テンプレートを用意しておく必要があります。</p>
+  <h3>つまずきやすい点</h3>
+  <div class="trip">
+    <div class="t"><h3>XP は大文字だけです</h3><p>「新品 xp」のように小文字の xp を使うと、配送の言葉と認識されず、標準名の欄に「⚠️ 変換失敗」と出ます。</p></div>
+    <div class="t"><h3>配送か状態の言葉が無いと、変換できません</h3><p>「カード 中古」のように、エコノミー・クーリエなどの言葉が無いと「⚠️ 変換失敗」です。新品・中古の言葉が無いときも同じです。変換できない行は、テンプレートを探す対象になりません。</p></div>
+    <div class="t"><h3>エコノミーと速達を両方書くと、エコノミーになります</h3><p>「速達 エコノミー 中古」は、エコノミーの言葉が先に見分けられるので、速達の言葉は名前に残って Template_速達_used_eco になります。意図しない名前になるので、配送の言葉は 1 種類だけにしてください。</p></div>
+    <div class="t"><h3>名前の中の New や Used にも反応します</h3><p>英語の New・Used は、単語の一部でも見分けられます。「New Balance 中古 エコノミー」は新品と判断され、Template_Balance 中古_new_eco になります（New が消えて、中古の言葉が名前に残ります）。種類の名前に New・Used を入れると、新品・中古の見分けと名前がずれるので避けてください。種類の名前に Express や XP を入れると、エコノミーの言葉が同じ名前にあれば名前に残るだけですが、エコノミーの言葉が無いと速達と判断されます。</p></div>
+    <div class="t"><h3>空白も同じに書きます</h3><p>名前の途中の空白は残ります（「スポーツ トレカ 中古 クーリエ」→ Template_スポーツ トレカ_used_xp）。タグ設定のテンプレート名には、残りの部分を空白まで同じに書きます。違うと「該当なし」になります。</p></div>
+  </div>
+  <p class="more"><a href="#s3-8">くわしくは開発者向け 3.8 節（テンプレートの判定と変換）</a>／<a href="#s4-13">4.13 節（テンプレートID）</a></p>
+</section>
+
+<section id="e10">
+  <h2><span class="no">10</span>Shipping Policy は「関税の帯」で選ばれます</h2>
   <p>送料の欄で関税を受け取る型（DDU）では、<strong>見積もった想定関税の金額が入る帯</strong>のポリシーが選ばれます。ポリシーは、関税の金額を小刻みに区切った「帯」ごとに用意されています。金額が低いほど刻みが細かく、<strong>20ドルまでは1ドル刻み</strong>です（エコノミーは 3 ドルから最大 70 ドルまで 39 本、速達便は 7 ドルから最大 500 ドルまで 111 本）。</p>
   <div class="fig"><div class="ttl">図10　関税の帯と、選ばれるポリシー（エコノミー・中古の場合）</div><div class="mini-note">① 拡大: 想定関税 13.66 ドルのまわり（帯の幅は実際の幅の比です。単位はドル）</div><div class="zoomwrap"><div class="zoomline"><div class="cell" style="flex:1 1 0"><b>10.01〜11</b>eco_used_0011</div><div class="cell" style="flex:1 1 0"><b>11.01〜12</b>eco_used_0012</div><div class="cell" style="flex:1 1 0"><b>12.01〜13</b>eco_used_0013</div><div class="cell hit" style="flex:1 1 0"><span class="pin">▼ 13.66</span><b>13.01〜14</b>eco_used_0014</div><div class="cell" style="flex:1 1 0"><b>14.01〜15</b>eco_used_0015</div><div class="cell" style="flex:1 1 0"><b>15.01〜16</b>eco_used_0016</div><div class="cell" style="flex:1 1 0"><b>16.01〜17</b>eco_used_0017</div></div></div><div class="mini-note" style="margin-top:14px">② 全体の刻み（各帯の上限。新品も中古も同じ数字の並びです）</div><div class="tbl-wrap"><table><thead><tr><th>配送タイプ</th><th>上限の並び（ドル）</th><th>本数（状態ごと）</th><th>最大</th></tr></thead><tbody><tr><td>エコノミー</td><td>3 から始まり、4〜20 は 1 ドル刻み、22、24、25、26、28〜34 は 2 ドル刻み、35、37、40、42、45、47、50、52、55、57、60、65、70</td><td class="num">39</td><td class="num">70</td></tr><tr><td>速達便</td><td>7 から始まり、8〜20 は 1 ドル刻み、22、24、25、26、28〜34 は 2 ドル刻み、35、37、40、42、45、47、50、52、55、57、60、65〜400 は 5 ドル刻み、410〜500 は 10 ドル刻み</td><td class="num">111</td><td class="num">500</td></tr></tbody></table></div><div class="cap">想定関税 13.66 ドルは「13.01〜14」の帯に入るので、<strong>eco_used_0014</strong> のポリシーが選ばれます。ポリシー名は、2026年11月時点の実際の名前の後ろの部分です。刻みは、取り込んだポリシーの名前で決まります。</div></div>
   <p>帯は、<strong>配送のタイプ（エコノミー／速達便）</strong>と<strong>商品の状態（新品／中古）</strong>の組み合わせごとに、別々に用意されています（エコノミー・新品／エコノミー・中古／速達便・新品／速達便・中古の4組）。上の図はそのうち「エコノミー・中古」の帯です。</p>
@@ -505,15 +555,15 @@ footer.end { padding: 30px 0 60px; text-align: center; color: var(--ink-soft); f
   <p class="more"><a href="#s5-1">くわしくは開発者向け 5.1 節</a>／<a href="#s3-6">3.6 節（ポリシーの表）</a>／<a href="#s4-12">4.12 節</a></p>
 </section>
 
-<section id="e10">
-  <h2><span class="no">10</span>つまずきやすい点</h2>
+<section id="e11">
+  <h2><span class="no">11</span>つまずきやすい点</h2>
   <div class="trip">
     <div class="t"><h3>タグは、1文字でも違うと別物です</h3><p>タグ設定表の名前と完全に同じでないと、「登録されていないタグ」になります。その場合、商品の状態・配送方法・手数料などは共通の設定の値になり、送料の欄には「#タグ未登録」と出ます。価格などはエラーになる想定です（実機では未確認）。全角・半角・空白の違いが同じ扱いになるかも確認できていないので、タグは設定表と同じ文字で入れてください。</p></div>
     <div class="t"><h3>商品の状態は「新品」か「中古」を選びます</h3><p>商品の状態の欄には、「新品」「中古」のほかに「AI」という選択肢があります。「AI」は、「新品か中古かを、翻訳のときに AI に判断させる」という意味です。ただし、価格やポリシーの計算は「新品」か「中古」が決まっていないと進められません。状態が「AI」のままの行は、ポリシーが「エラー」または「該当なし」になり、テンプレートは中古用が選ばれます。タグの設定か共通の設定で、「新品」か「中古」を選んでおくのが確実です。</p></div>
     <div class="t"><h3>利益方法・送料方法の欄は、決まった言葉だけ</h3><p>「タグ別利益率」「利益額（Profit_Amounts参照）」「タグ別送料」「固定金額（Profit_Amounts参照）」のどれかを、全角のカッコまで同じ文字で入れます。ほかの言葉があると初期設定が止まります。空欄は大丈夫です。</p></div>
     <div class="t"><h3>仕入れ値が空だと、価格も空です</h3><p>利益額や固定送料の表の、いちばん小さい仕入れ値より低い値を入れると、「#N/A」が出ます。これは「出品を止める合図」として、わざとそうなっています。</p></div>
     <div class="t"><h3>割合を引きすぎると、おかしな価格になります</h3><p>手数料・広告費・受取手数料・利益率の合計が 100% に近づくと、「残りの割合」がゼロやマイナスになります。式に歯止めがなく、価格がマイナスやエラーになります。</p></div>
-    <div class="t"><h3>「該当なし」と出たら</h3><p>Shipping Policy やテンプレートが見つかっていません。DDP や関税免除のポリシーが登録されていないときも「該当なし」です（DDU には切り替わりません）。テンプレートは、一覧の2〜50行目の中から探します。</p></div>
+    <div class="t"><h3>「該当なし」と出たら</h3><p>Shipping Policy やテンプレートが見つかっていません。DDP や関税免除のポリシーが登録されていないときも「該当なし」です（DDU には切り替わりません）。テンプレートは、一覧の2〜50行目の中から探します。テンプレートの名前の付け方と、タグ設定のテンプレート名の書き方は9を見てください。</p></div>
     <div class="t"><h3>ポリシーの一覧を取り直しても、最大30分は古いままです</h3><p>ポリシーの表は30分間、保存されます。取り直した直後は、反映が遅れることがあります。</p></div>
     <div class="t"><h3>関税免除のタグを足したら、初期設定を保存し直します</h3><p>免除の指定は <code>DDP_TF_</code> の後ろに4桁の数字です（3桁は免除になりません）。免除タグを後から足しても、初期設定を保存し直すまで効きません。免除になるのは、エコノミー（EP）の中古品の行だけです。</p></div>
     <div class="t"><h3>関税の見積もりは、共通設定の手数料・広告費で作られます</h3><p>タグごとに手数料率や広告費率を変えても、関税の見積もりに使う率には入りません。販売価格はタグの率で計算されるので、タグの率が共通設定と違うと、見積もりの前提がずれます。</p></div>
@@ -560,7 +610,7 @@ footer.end { padding: 30px 0 60px; text-align: center; color: var(--ink-soft); f
 <li><a href="#s3-5">3.5 Shipping_Rates と Shipping_Methods（送料表）</a></li>
 <li><a href="#s3-6">3.6 Import_Policies（EAGLE から取得したシッピングポリシーの表）</a></li>
 <li><a href="#s3-7">3.7 Policy_Master（まとめて適用する側と、DDP/免除の式が読む表）</a></li>
-<li><a href="#s3-8">3.8 Import_Templates と命名規則</a></li>
+<li><a href="#s3-8">3.8 テンプレートの判定と変換、ポリシー名の命名規則</a></li>
 </ol></li>
 <li><a href="#s4">4. 計算手順（V5）</a>
 <ol>
@@ -620,7 +670,7 @@ footer.end { padding: 30px 0 60px; text-align: center; color: var(--ink-soft); f
 <li><a href="#s11-1">11.1 取り込み形式</a></li>
 <li><a href="#s11-2">11.2 入力チェックの一覧</a></li>
 </ol></li>
-<li><a href="#d-82">付録</a>
+<li><a href="#d-85">付録</a>
 <ol>
 <li><a href="#appx-A">付録 A: 非 V5 の式</a></li>
 <li><a href="#appx-B">付録 B: 利益早見表（JavaScript 実装 PM）との対応</a></li>
@@ -1480,7 +1530,7 @@ footer.end { padding: 30px 0 60px; text-align: center; color: var(--ink-soft); f
 <tr>
 <td>G</td>
 <td>テンプレート名</td>
-<td>例 <code>一般汎用</code>。E 列のテンプレ名</td>
+<td>例 <code>一般汎用</code>。E 列のテンプレ名。出品テンプレート名から判定の文言（新品・中古・エコノミー・クーリエなど）を取り除いた残りを、空白まで同じに書く（3.8.1・3.8.3）</td>
 <td>Policy_Master のテンプレート名一覧</td>
 <td>E</td>
 <td>P3:4046-4072, P3:4516</td>
@@ -1934,12 +1984,269 @@ xp_used | 111 | 0.01〜7 | 490.01〜500
 <li>作業シートの式が読むのは B 列のポリシー名と A 列のID（P3:4571-4576）。<code>MATCH("*eco_used_free", Policy_Master!B:B, 0)</code> のワイルドカード <code>*</code> は「前に何があってもよい」の意味で、<strong>名前が <code>eco_used_free</code> で終わる最初の行</strong>にマッチします（Google スプレッドシートの MATCH の仕様。【未確認】実機）。</li>
 <li>まとめて適用する側は <code>loadPolicyMasterCache_</code>（P4:287-423）で、見出し行を目印に 3 つのセクションを読みます（P4:322-345）。</li>
 </ul>
-<h4 id="s3-8">3.8 Import_Templates と命名規則</h4>
+<h4 id="s3-8">3.8 テンプレートの判定と変換、ポリシー名の命名規則</h4>
 <ul>
-<li>Import_Templates: A=Template ID、B=日本語名、C=自動生成された標準名（確認用）（P4:1373-1403, EG:1549-1551）。C 列は <code>generateStandardTemplateName</code>（P4:1463-1517）が B 列から作ります: 名前から <code>エコノミー|economy|小形包装物|small packet</code> なら <code>eco</code>、<code>クーリエ|XP|速達|express</code> なら <code>xp</code>、<code>新品|new</code> / <code>中古|used</code> を取り除き、残りがテンプレート名（空なら <code>一般汎用</code>）。結果は <code>Template_&lt;名&gt;_&lt;new|used&gt;_&lt;eco|xp&gt;</code>【検証済み】。配送タイプ（上の 2 種の語）か状態（新品/new・中古/used）のどちらかが名前から判定できないと null（<code>⚠️ 変換失敗</code>: P4:1481-1500, EG:1941-1948）。</li>
-<li>式のテンプレート検索範囲は <code>Import_Templates!$A$2:$A$50</code> と <code>$C$2:$C$50</code>（49 行まで。P3:4529）。まとめて適用する側は Policy_Master のテンプレートセクション全体（行数の上限なし。P4:347-358）。</li>
+<li>テンプレートには 2 つの仕組みが続いています。①<strong>変換</strong>: Import_Templates の B 列（日本語名。EAGLE の出品テンプレートの名前）から、C 列（標準名 <code>Template_&lt;名&gt;_&lt;new|used&gt;_&lt;eco|xp&gt;</code>）を作る（3.8.1）。②<strong>判定</strong>: 作業シートの E 列の式が、商品の「タグの G 列・状態・配送方法」から同じ形の名前を作り、C 列と完全一致する行の ID（A 列）を返す（3.8.2。式の原文は 4.13）。2 つの名前の作り方が同じ形になることが前提なので、タグ設定の G 列には、<strong>変換で判定の文言を取り除いた残りの名前を、空白まで同じに</strong>書く必要があります（3.8.3）。</li>
+<li>入力の出所: Import_Templates の B 列は、EAGLE から取得した出品テンプレートの <code>id</code> と <code>name</code>（名称）をそのまま書いたものです（<code>fetchTemplatesFromEagle</code> EG:1421-1465、書き込み EG:1564）。EAGLE の出品テンプレート設定（<code>eagle-ui-notes.md</code>）の名称の例「一般 中古 エコノミー」「ゲーム 中古 クーリエ」「トレカGraded PSA10 中古 エコノミー」が、そのまま変換の入力になります（「（種類）（新品/中古）（エコノミー/クーリエ）」の付け方が、シートの「テンプレート名 × 状態 × 配送タイプ」と同じ考え方）。</li>
 </ul>
-<h5 id="d-25">命名規則（まとめ）</h5>
+<h5 id="s3-8-1">3.8.1 変換（Import_Templates の B 列 → C 列）</h5>
+<ul>
+<li>関数: <code>generateStandardTemplateName(japaneseName)</code>（P4:1463-1513）。呼び出しは 3 か所（下の表）。Import_Templates は A=Template ID、B=日本語名、C=自動生成された標準名（確認用）（P4:1373-1403, EG:1549-1551）。</li>
+<li>手順（コードの順番どおり）。<strong>配送タイプを先に判定します</strong>。</li>
+</ul>
+<pre><code>name = trim(日本語名)                          // 空なら null（変換失敗）
+(1) 配送タイプ
+    /エコノミー|[Ee]conomy|小形包装物|[Ss]mall.*[Pp]acket/  に一致 → eco。一致した語を全て（g）取り除いて trim
+    そうでなければ
+    /クーリエ|クリエ|XP|速達|[Ee]xpress/                    に一致 → xp。 一致した語を全て（g）取り除いて trim
+    どちらにも一致しない → null（失敗。「配送タイプが判定できません」）
+(2) 商品状態（(1) で取り除いた残りに対して）
+    /新品|[Nn]ew/   に一致 → new。一致した語を全て取り除いて trim
+    そうでなければ
+    /中古|[Uu]sed/  に一致 → used。一致した語を全て取り除いて trim
+    どちらにも一致しない → null（失敗。「商品状態が判定できません」）
+(3) 残りがテンプレート名。空なら「一般汎用」
+結果 = &quot;Template_&quot; + テンプレート名 + &quot;_&quot; + (new|used) + &quot;_&quot; + (eco|xp)
+</code></pre>
+<ul>
+<li>文言の対応（コードの正規表現そのもの。大文字小文字は、英語の語の<strong>先頭 1 文字だけ</strong>両方を許す書き方）:</li>
+</ul>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>判定</th>
+<th>結果</th>
+<th>文言</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>配送タイプ（先に判定）</td>
+<td>eco</td>
+<td><code>エコノミー</code>、<code>Economy</code>／<code>economy</code>、<code>小形包装物</code>、<code>Small Packet</code>（<code>Small</code> と <code>Packet</code> の間は何文字でもよい。先頭の S・P は大文字でも小文字でも可）</td>
+</tr>
+<tr>
+<td>配送タイプ（eco が無いときだけ）</td>
+<td>xp</td>
+<td><code>クーリエ</code>、<code>クリエ</code>、<code>XP</code>（<strong>大文字だけ</strong>）、<code>速達</code>、<code>Express</code>／<code>express</code></td>
+</tr>
+<tr>
+<td>状態（先に判定）</td>
+<td>new</td>
+<td><code>新品</code>、<code>New</code>／<code>new</code></td>
+</tr>
+<tr>
+<td>状態（new が無いときだけ）</td>
+<td>used</td>
+<td><code>中古</code>、<code>Used</code>／<code>used</code></td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>失敗の表示: 変換できないと関数は null を返し、呼び出し側が Import_Templates の C 列に文字 <code>⚠️ 変換失敗</code> を書きます。式（E 列）の検索は標準名との完全一致なので、この行は当たりません。Policy_Master への反映でも、C 列が空や <code>⚠️</code> の行は除かれます（3.7）。</li>
+<li>3 か所の呼び出しの違い（読むのは 3 か所とも Import_Templates の 2 行目から最終行まで。A も B も空の行は読み飛ばす）:</li>
+</ul>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>呼び出し元</th>
+<th>例の行の読み飛ばし</th>
+<th>ID か名前が空の行</th>
+<th>変換失敗のとき</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>validateImportData</code>（P4:1633、変換は P4:1665）</td>
+<td>A 列に全角カッコの <code>（例）</code> を含む行</td>
+<td>C 列には何も書かず、エラー件数だけ増やす</td>
+<td>C 列に <code>⚠️ 変換失敗</code>、エラー扱い（hasError）で報告に出す</td>
+</tr>
+<tr>
+<td><code>executeValidationInternal</code>（EG:1911、変換は EG:1942。ダイアログなし・エラーでも続行）</td>
+<td>全角カッコの <code>（例）</code> を含む行</td>
+<td>C 列に <code>⚠️ データ不足</code></td>
+<td>C 列に <code>⚠️ 変換失敗</code>、警告のログだけで続行</td>
+</tr>
+<tr>
+<td><code>validateAndApplyImport</code>（P5:17、変換は P5:55）</td>
+<td><strong>半角カッコ</strong> <code>(例)</code> を含む行（他の 2 つと違う）</td>
+<td>C 列に <code>⚠️ ID/名前が空</code>（行番号を記録）</td>
+<td>C 列に <code>⚠️ 変換失敗</code>、エラー行はスキップして反映する</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>注記（呼び出し元の名前）: <code>validateImportData</code> は <strong>P4:1633 と P5:186 の 2 か所に同名の定義</strong>があります。P5 側は Shipping_Policy_Import・Return_Policy_Import の検証で、テンプレートの変換はしません。<code>updateTemplatePolicyOnly</code> の古い方の定義（EG:2171）は、この <code>validateImportData</code> を<strong>引数なしで</strong>呼びます（新しい方の定義 EG:2300 は <code>executeValidationInternal</code> を呼ぶ。K15）。Apps Script では同名の定義は一方が他方を上書きするため、実際にどちらが動くかは【未確認】です。</li>
+<li>C 列が作られる操作（設定メニュー）: 「テンプレート・ポリシー再取得」（<code>updateTemplatePolicyOnly</code>）、「検証→マスター反映」（<code>validateAndApplyImport</code>）、初期設定でテンプレート・ポリシーを取得するとき（<code>saveAndExecuteSetup</code> EG:1795）。どれも、B 列から C 列を作り直します（C 列に貼った値は上書きされます）。</li>
+<li>B 列が空で A・C 列だけある行: 3 つの呼び出しのうち P4 は C 列に何も書かず（エラー件数だけ増やす）、EG は <code>⚠️ データ不足</code>、P5 は <code>⚠️ ID/名前が空</code> を書きます（<code>!id || !jaName</code> の判定。C 列に値があっても外れます）。見本ツールの (D) も、この行は外して理由を出します。</li>
+<li>見本ツールの (D) は、B 列だけを貼ると、この関数と同じ手順で C 列を作ります（<code>tool/logic.js</code> の <code>standardTemplateName</code>。<code>verify-against-gs.js</code> が実際の関数と全例で同じ結果になることを確認済み）。C 列も貼った場合は、その値を優先し、B 列から作った値と違えば注意を出します。</li>
+</ul>
+<h5 id="s3-8-2">3.8.2 判定（作業シート E 列がどう探すか）</h5>
+<ul>
+<li>式の原文は 4.13。作業シートの E 列は、次の名前を作り、Import_Templates の C 列と<strong>完全一致</strong>する行の A 列（ID）を返します。見つからなければ <code>該当なし</code>。</li>
+<li><code>Template_</code> ＋ テンプレート名 ＋ <code>_</code> ＋ （状態 AE が <code>新品</code> なら <code>new</code>、それ以外は全て <code>used</code>）＋ <code>_</code> ＋ （配送方法 X が <code>EP</code> か <code>CE</code> なら <code>eco</code>、それ以外は全て <code>xp</code>）。</li>
+<li>テンプレート名 ＝ <strong>タグが TagShipping に見つからないとき（タグ判定が OFF の非 V5 のときも）は設定セル O2</strong>。タグが見つかれば、その行の G 列です（O2 に倒れるのは検索が失敗したときだけで、<strong>タグがあって G が空のときは O2 にならず、E は空</strong>になります: P3:4513-4516 の <code>IFERROR(INDEX(G:G,MATCH(D,A:A,0)),$O$2)</code>。engine.js の <code>tpl</code> も同じ動き）。</li>
+<li>E が空（<code>""</code>）になる条件: D（タグ）が空（タグ判定 ON のとき）、テンプレート名（上の規則で決まったもの）が空、状態 AE が空、配送方法 X が空のどれか（4.13 の疑似コードと同じ）。</li>
+<li>検索範囲は <code>Import_Templates!$A$2:$A$50</code> と <code>$C$2:$C$50</code>（49 行まで。P3:4529）。まとめて適用する側（5.2）は Policy_Master のテンプレートセクション全体（行数の上限なし。P4:347-358）。</li>
+<li>変換（3.8.1）が作る名前と、判定が作る名前は、同じ <code>Template_&lt;名&gt;_&lt;new|used&gt;_&lt;eco|xp&gt;</code> の形です。<strong>判定が探せるのは、C 列に一致する標準名がある組み合わせだけ</strong>です。新品・中古、エコノミー系・速達系のうち、一覧に無い組み合わせの商品は <code>該当なし</code> になります。</li>
+<li>G 列に書く名前: 変換が「判定の文言を取り除いて残した名前」を、<strong>空白（全角・途中の空白を含む）まで同じ文字で</strong>書きます。G 列の選択リストは、Policy_Master のテンプレート名から <code>^Template_(.+?)_(?:new|used)_(?:eco|xp)$</code> で作られます（P3:4046-4072。選択肢外も入力できる設定）ので、通常はそこから選べば変換結果と同じ名前になります。</li>
+<li>例: EAGLE の出品テンプレート名 <code>ゲーム 中古 クーリエ</code> → C 列 <code>Template_ゲーム_used_xp</code> → タグの G 列は <code>ゲーム</code>。タグの状態が中古で、配送方法が CF（クーリエ系）の行は、この C 列の ID を返します。</li>
+<li>【未確認】式の完全一致での大文字小文字の扱い（Google スプレッドシートの <code>MATCH</code> の挙動）。見本ツールの <code>engine.js</code> は大文字小文字を区別せず比べています（<code>新品</code>/<code>中古</code> の取り違えは起きない形のため結果には影響しにくい）。</li>
+</ul>
+<h5 id="s3-8-3">3.8.3 落とし穴（実際の関数を動かした出力）</h5>
+<ul>
+<li>次の表は、実際の <code>generateStandardTemplateName</code> を読み込んで実行した結果です（<code>verify-against-gs.js</code> が毎回同じ結果になることを確認しています。ツール版 <code>standardTemplateName</code> とも全例で一致）。</li>
+</ul>
+<p>実例（EAGLE の出品テンプレート名の付け方）:</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>入力（B 列の日本語名）</th>
+<th>結果（C 列の標準名）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ゲーム 中古 クーリエ</code></td>
+<td><code>Template_ゲーム_used_xp</code></td>
+</tr>
+<tr>
+<td><code>時計 中古 速達</code></td>
+<td><code>Template_時計_used_xp</code></td>
+</tr>
+<tr>
+<td><code>本 中古 Express</code></td>
+<td><code>Template_本_used_xp</code></td>
+</tr>
+<tr>
+<td><code>ゲーム 中古 クリエ</code></td>
+<td><code>Template_ゲーム_used_xp</code></td>
+</tr>
+<tr>
+<td><code>一般　中古　エコノミー</code>（全角空白）</td>
+<td><code>Template_一般_used_eco</code></td>
+</tr>
+<tr>
+<td><code>トレカGraded PSA10　中古　エコノミー</code></td>
+<td><code>Template_トレカGraded PSA10_used_eco</code></td>
+</tr>
+<tr>
+<td><code>中古 エコノミー</code></td>
+<td><code>Template_一般汎用_used_eco</code></td>
+</tr>
+<tr>
+<td><code>新品 XP</code></td>
+<td><code>Template_一般汎用_new_xp</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>落とし穴と境目:</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>入力</th>
+<th>結果</th>
+<th>起きること</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>新品 xp</code></td>
+<td>失敗（null）</td>
+<td>XP は<strong>大文字だけ</strong>。小文字の <code>xp</code>・<code>Xp</code> は配送タイプと認識されない</td>
+</tr>
+<tr>
+<td><code>カード 中古</code></td>
+<td>失敗（null）</td>
+<td>配送タイプの文言が無い（エコノミー・クーリエなど）</td>
+</tr>
+<tr>
+<td><code>エコノミー</code></td>
+<td>失敗（null）</td>
+<td>状態の文言が無い</td>
+</tr>
+<tr>
+<td><code>速達 エコノミー 中古</code></td>
+<td><code>Template_速達_used_eco</code></td>
+<td>エコノミーが先に判定され、<code>速達</code> が名前に残る</td>
+</tr>
+<tr>
+<td><code>ゲーム 中古 エコノミー XP</code></td>
+<td><code>Template_ゲーム   XP_used_eco</code></td>
+<td>同上（XP が名前に残り、空白も 3 つ残る）</td>
+</tr>
+<tr>
+<td><code>New Balance 中古 エコノミー</code></td>
+<td><code>Template_Balance 中古_new_eco</code></td>
+<td>英語の <code>New</code> は単語の一部でも反応し、新品と判定される（<code>中古</code> は名前に残る）</td>
+</tr>
+<tr>
+<td><code>Newtown 中古 エコノミー</code></td>
+<td><code>Template_town 中古_new_eco</code></td>
+<td>同上</td>
+</tr>
+<tr>
+<td><code>Reused 中古 エコノミー</code></td>
+<td><code>Template_Re_used_eco</code></td>
+<td>英語の <code>used</code> も単語の一部で反応する</td>
+</tr>
+<tr>
+<td><code>ゲーム 新品 中古 エコノミー</code></td>
+<td><code>Template_ゲーム  中古_new_eco</code></td>
+<td>新品が先に判定され、<code>中古</code> が名前に残る</td>
+</tr>
+<tr>
+<td><code>ゲーム 新品 EXPRESS</code></td>
+<td><code>Template_ゲーム  ERESS_new_xp</code></td>
+<td>大文字の <code>EXPRESS</code> は <code>Express</code> に一致せず、中の <code>XP</code> だけが取り除かれる</td>
+</tr>
+<tr>
+<td><code>ECONOMY 中古</code> / <code>USED エコノミー</code> / <code>NEW エコノミー</code></td>
+<td>失敗（null）</td>
+<td>英語は先頭 1 文字だけ大小どちらも可。全部大文字は認識されない</td>
+</tr>
+<tr>
+<td><code>スポーツ トレカ 中古 クーリエ</code></td>
+<td><code>Template_スポーツ トレカ_used_xp</code></td>
+<td>名前の途中の空白はそのまま残る（G 列も同じ空白で書く）</td>
+</tr>
+<tr>
+<td><code>ゲーム 中古 トレカ クーリエ</code></td>
+<td><code>Template_ゲーム  トレカ_used_xp</code></td>
+<td>取り除いた語の跡に空白が 2 つ残る</td>
+</tr>
+<tr>
+<td><code>Small ゲーム Packet 中古</code></td>
+<td><code>Template_一般汎用_used_eco</code></td>
+<td><code>Small.*Packet</code> は間の文字を全て取り除く（名前が消えて一般汎用になる）</td>
+</tr>
+<tr>
+<td><code>Economy 中古</code> / <code>economy 新品</code> / <code>Small Packet 新品</code> / <code>小形包装物 新品</code></td>
+<td><code>Template_一般汎用_used_eco</code> / <code>..._new_eco</code> / <code>..._new_eco</code> / <code>..._new_eco</code></td>
+<td>英語の Economy・小形包装物・Small Packet も eco になる</td>
+</tr>
+<tr>
+<td><code>ゲーム small packet used</code> / <code>ゲーム Used express</code></td>
+<td><code>Template_ゲーム_used_eco</code> / <code>Template_ゲーム_used_xp</code></td>
+<td>英語の小文字の <code>used</code>・<code>express</code>・<code>packet</code> も使える</td>
+</tr>
+<tr>
+<td><code>新品　　エコノミー</code></td>
+<td><code>Template_一般汎用_new_eco</code></td>
+<td>前後の空白（全角を含む）は取り除かれ、名前が空なら一般汎用</td>
+</tr>
+<tr>
+<td>（空） / 空白だけ</td>
+<td>失敗（null）</td>
+<td>名前が空</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>対策: EAGLE の出品テンプレートの名称は「（種類）（新品／中古）（エコノミー／クーリエ）」の順に、日本語の文言（新品・中古・エコノミー・クーリエ・速達）で付けるのが確実です。種類の名前に <code>New</code>・<code>Used</code>・<code>Economy</code>・<code>Express</code>・<code>XP</code> を含めない。配送タイプの文言は 1 種類だけ入れる。タグ設定の G 列は、判定の文言を除いた残りの名前を空白まで同じに書く。</li>
+</ul>
+<h5 id="d-28">命名規則（まとめ）</h5>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -2328,7 +2635,12 @@ else:
 </ul>
 <h4 id="s4-13">4.13 テンプレートID E</h4>
 <ul>
-<li>言葉の説明: タグ行 G のテンプレート名（空なら O2）と、状態（新品→new、他は used）、配送（EP/CE→eco、他は xp）から <code>Template_&lt;名&gt;_&lt;new|used&gt;_&lt;eco|xp&gt;</code> を作り、Import_Templates の標準名（C 列）と完全一致する行の A 列（ID）を返す。見つからなければ <code>該当なし</code>。</li>
+<li>
+<p>標準名の作り方（Import_Templates の B 列 → C 列の変換）と、タグ G 列に書く名前、落とし穴は 3.8（3.8.1〜3.8.3）。</p>
+</li>
+<li>
+<p>言葉の説明: タグ行 G のテンプレート名（<strong>タグが TagShipping に無いとき、またはタグ判定が OFF のときだけ設定セル O2</strong>。タグがあって G が空なら E は空）と、状態（新品→new、他は used）、配送（EP/CE→eco、他は xp）から <code>Template_&lt;名&gt;_&lt;new|used&gt;_&lt;eco|xp&gt;</code> を作り、Import_Templates の標準名（C 列）と完全一致する行の A 列（ID）を返す。見つからなければ <code>該当なし</code>。</p>
+</li>
 <li>式の原文（S1）:</li>
 </ul>
 <pre><code>=IF(OR(D5=&quot;&quot;,ISBLANK(IFERROR(INDEX(TagShipping!G:G,MATCH(D5,TagShipping!A:A,0)),$O$2)),ISBLANK(AE5),ISBLANK(X5)),&quot;&quot;,IFERROR(INDEX(Import_Templates!$A$2:$A$50,MATCH(&quot;Template_&quot;&amp;IFERROR(INDEX(TagShipping!G:G,MATCH(D5,TagShipping!A:A,0)),$O$2)&amp;&quot;_&quot;&amp;IF(AE5=&quot;新品&quot;,&quot;new&quot;,&quot;used&quot;)&amp;&quot;_&quot;&amp;IF(X5=&quot;EP&quot;,&quot;eco&quot;,IF(X5=&quot;CE&quot;,&quot;eco&quot;,&quot;xp&quot;)),Import_Templates!$C$2:$C$50,0)),&quot;該当なし&quot;))
@@ -3145,7 +3457,7 @@ for 各行:
 <li>Import_Policies（ポリシー表）は 3.6 の見本の表です（実名の系列。ID は見本用）。DDP・免除のポリシー（接頭辞なしの <code>eco_new_free</code>・<code>eco_used_taxfree_0500</code> など）は Policy_Master の B 列にあるものとして扱います。固定ポリシーの名前は 2026-11-17 に読み取った実名の末尾部分で、コードが見るのは「末尾一致」だけです（P3:4571, 4575）。</li>
 </ul>
 <h4 id="s8-2">8.2 例</h4>
-<h5 id="d-53">例1: 通常DDU・利益率方式（タグ別の利益率10%、配送EP）</h5>
+<h5 id="d-56">例1: 通常DDU・利益率方式（タグ別の利益率10%、配送EP）</h5>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -3267,7 +3579,7 @@ for 各行:
 </tr>
 </tbody>
 </table></div>
-<h5 id="d-54">例2: 利益額方式（タグの利益方法が「利益額（Profit_Amounts参照）」。利益額は Profit_Amounts の C 列）</h5>
+<h5 id="d-57">例2: 利益額方式（タグの利益方法が「利益額（Profit_Amounts参照）」。利益額は Profit_Amounts の C 列）</h5>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -3389,7 +3701,7 @@ for 各行:
 </tr>
 </tbody>
 </table></div>
-<h5 id="d-55">例2b: 利益額方式（シート全体が利益額。R式は (I+T+U)/(1-(V+広告費率+Z2))/C2）</h5>
+<h5 id="d-58">例2b: 利益額方式（シート全体が利益額。R式は (I+T+U)/(1-(V+広告費率+Z2))/C2）</h5>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -3511,7 +3823,7 @@ for 各行:
 </tr>
 </tbody>
 </table></div>
-<h5 id="d-56">例3: 固定送料（タグの送料方法が「固定金額（Profit_Amounts参照）」、J1 は空 → Profit_Amounts の D 列）</h5>
+<h5 id="d-59">例3: 固定送料（タグの送料方法が「固定金額（Profit_Amounts参照）」、J1 は空 → Profit_Amounts の D 列）</h5>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -3633,7 +3945,7 @@ for 各行:
 </tr>
 </tbody>
 </table></div>
-<h5 id="d-57">例4: DDU調整あり（AP2=ON、想定関税が閾値以上）</h5>
+<h5 id="d-60">例4: DDU調整あり（AP2=ON、想定関税が閾値以上）</h5>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -3755,7 +4067,7 @@ for 各行:
 </tr>
 </tbody>
 </table></div>
-<h5 id="d-58">例5: 関税免除（DDP_TF_0500 × EP × 中古）</h5>
+<h5 id="d-61">例5: 関税免除（DDP_TF_0500 × EP × 中古）</h5>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -3877,7 +4189,7 @@ for 各行:
 </tr>
 </tbody>
 </table></div>
-<h5 id="d-59">例6: 通常DDP（タグの DDP/DDU設定=DDP、EP、新品）</h5>
+<h5 id="d-62">例6: 通常DDP（タグの DDP/DDU設定=DDP、EP、新品）</h5>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -3999,7 +4311,7 @@ for 各行:
 </tr>
 </tbody>
 </table></div>
-<h5 id="d-60">例7: CE配送（通関手数料を加算）＋送料上限カテゴリ Video Games（$20）</h5>
+<h5 id="d-63">例7: CE配送（通関手数料を加算）＋送料上限カテゴリ Video Games（$20）</h5>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -4121,7 +4433,7 @@ for 各行:
 </tr>
 </tbody>
 </table></div>
-<h5 id="d-61">例8: タグ未登録（既定値への倒れ方）</h5>
+<h5 id="d-64">例8: タグ未登録（既定値への倒れ方）</h5>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -4238,7 +4550,7 @@ for 各行:
 </tr>
 </tbody>
 </table></div>
-<h5 id="d-62">例9: VAT 率（AE2）が 0% と 8% のときの想定関税の比較（例1と同じ入力: タグ サンプルA、仕入 5,000 円）</h5>
+<h5 id="d-65">例9: VAT 率（AE2）が 0% と 8% のときの想定関税の比較（例1と同じ入力: タグ サンプルA、仕入 5,000 円）</h5>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -4501,6 +4813,13 @@ PASS convertShippingMethodToType('EP')='エコノミー'（Part3 版。batch が
 PASS generateNewTemplateName('一般汎用','中古','エコノミー')='Template_一般汎用_used_eco'
 PASS generateStandardTemplateName('一般汎用 中古 エコノミー')='Template_一般汎用_used_eco'
 PASS generateStandardTemplateName('新品　エコノミー')='Template_一般汎用_new_eco'（名前が空なら 一般汎用）
+PASS generateStandardTemplateName: 実例・落とし穴・境目 46 件が期待どおり（実際の .gs の出力）
+PASS standardTemplateName（ツール版）: 上の 46 件で .gs 版と同じ結果
+PASS ツール版の失敗理由: 配送タイプが無い／状態が無い／空
+PASS standardTemplateName（ツール版）: 総当たり 15552 件で .gs 版と同じ結果
+PASS 変換できない名前は null（呼び出し側が C 列に「⚠️ 変換失敗」と書く）
+PASS E 列の検索: 変換結果 Template_ゲーム_used_xp を、タグ G=ゲーム・中古・CF の行が探し当てる（ID 11）
+PASS E 列の検索: 一覧に標準名が無い組み合わせ（ゲーム・中古・EP）は「該当なし」
 PASS calculateShippingFeeFromPolicyName('..._eco_new_0003')=3
 PASS calculateShippingFeeFromPolicyName('eco_used_free')=null（実際の名前は接頭辞なし。手動用）
 PASS calculateShippingFeeFromPolicyName('eco_used_taxfree_0500')=null（実際の名前は接頭辞なし。2番目が - を含まないので手動用）
@@ -4518,7 +4837,7 @@ PASS generateSkuForRows_: 連番が 1000 になると下3桁に切られて 000 
 PASS generateSkuForRows_: C が入っている行(7)・略称に半角英数字以外が無くても x1 は有効・未登録タグは書かない
 PASS generateSkuForRows_: 結果の件数（生成3・スキップ2）
 
-一致 40 件 / 不一致 0 件
+一致 47 件 / 不一致 0 件
 </code></pre>
 <h3 id="s10">10. 出品管理ツールに持たせる設定の一覧</h3>
 <ul>
@@ -4598,7 +4917,7 @@ PASS generateSkuForRows_: 結果の件数（生成3・スキップ2）
 </tr>
 <tr>
 <td>テンプレート名</td>
-<td>テンプレートの名前部分（例: 一般汎用）</td>
+<td>テンプレートの名前部分（例: 一般汎用）。EAGLE の出品テンプレート名から判定の文言を取り除いた残り（3.8.1・3.8.3）</td>
 <td>G</td>
 <td>テンプレートID E</td>
 <td>テンプレートID</td>
@@ -5024,7 +5343,7 @@ PASS generateSkuForRows_: 結果の件数（生成3・スキップ2）
 </tr>
 <tr>
 <td>テンプレートの ID と標準名</td>
-<td><code>Template_&lt;名&gt;_&lt;new|used&gt;_&lt;eco|xp&gt;</code></td>
+<td><code>Template_&lt;名&gt;_&lt;new|used&gt;_&lt;eco|xp&gt;</code>（標準名は B 列＝EAGLE の出品テンプレート名から変換で作る: 3.8.1）</td>
 <td>Import_Templates A・C（2〜50 行目）</td>
 <td>E</td>
 <td>テンプレートID</td>
@@ -5405,7 +5724,7 @@ PASS generateSkuForRows_: 結果の件数（生成3・スキップ2）
 <td>G</td>
 <td>テンプレート名</td>
 <td>文字</td>
-<td>(D) のテンプレート一覧の標準名にある名前</td>
+<td>(D) のテンプレート一覧の標準名にある名前（出品テンプレート名から判定の文言を取り除いた残り。空白まで同じに。3.8.3）</td>
 </tr>
 <tr>
 <td>H</td>
@@ -5698,8 +6017,8 @@ PASS generateSkuForRows_: 結果の件数（生成3・スキップ2）
 <td>注意</td>
 <td>G</td>
 <td>空欄、または前後に空白がある</td>
-<td>テンプレート E が空、または標準名と一致せず「該当なし」</td>
-<td>4.13・7 章 #3</td>
+<td>テンプレート E が空、または標準名と一致せず「該当なし」（G には出品テンプレート名から判定の文言を取り除いた残りを書く）</td>
+<td>4.13・3.8.3・7 章 #3</td>
 </tr>
 <tr>
 <td>26</td>
@@ -5707,7 +6026,7 @@ PASS generateSkuForRows_: 結果の件数（生成3・スキップ2）
 <td>G</td>
 <td>(D) のテンプレート一覧に標準名が 1 つも無い</td>
 <td>E が <code>該当なし</code></td>
-<td>4.13</td>
+<td>4.13・3.8.2</td>
 </tr>
 <tr>
 <td>27</td>
@@ -5755,7 +6074,7 @@ PASS generateSkuForRows_: 結果の件数（生成3・スキップ2）
 <li>共通設定の検査（(B) に表示）: 為替 C2 が 0 以下（エラー）、手数料率＋広告費率＋Payoneer が 100% 以上（エラー。免除の <code>#N/A</code>: 4.9・7 章 #14）、P2 が <code>AI</code>（注意: 9.1 K19）、Profit_Amounts が空（注意: 3.4）。</li>
 <li>入力規則（選択リスト）が選択肢外の値を許可しない設定（<code>setAllowInvalid(false)</code>）なのは R・S・T 列だけで、G・H・I・J・K・L・M・P 列は選択肢外も許可する設定です（P3:4046-4207）。貼り付けのときに入力規則がどう働くかは実機で未確認です。</li>
 </ul>
-<h3 id="d-82">付録</h3>
+<h3 id="d-85">付録</h3>
 <h4 id="appx-A">付録 A: 非 V5 の式</h4>
 <ul>
 <li>非 V5（B1 が「V5 ON」でない）では、<code>applyCalculationFormulas</code> は <code>v5Mode=false</code> で呼ばれ、タグ判定（<code>tagOverride*</code>）は DocumentProperties の保存値で決まります（C:382-393）。V5 では全て ON に固定されます（C:350-393, P3:4329-4345）。</li>

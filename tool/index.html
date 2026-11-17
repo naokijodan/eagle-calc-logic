@@ -201,7 +201,7 @@ footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13p
   <div id="bands"></div>
   <h3>テンプレート一覧</h3>
   <div id="tplMode"></div>
-  <p class="muted">シートの <code>Import_Templates</code> の A〜C 列を貼り付けます（式が読むのは 2〜50 行目。標準名 <code>Template_&lt;名&gt;_&lt;new|used&gt;_&lt;eco|xp&gt;</code> と完全一致で探します: 4.13）。</p>
+  <p class="muted">シートの <code>Import_Templates</code> の A〜C 列を貼り付けます（式が読むのは 2〜50 行目。標準名 <code>Template_&lt;名&gt;_&lt;new|used&gt;_&lt;eco|xp&gt;</code> と完全一致で探します: 4.13）。<b>A・B 列（ID と日本語名）だけでも貼れます</b>。C 列（標準名）はシートと同じ規則で B 列から作ります（仕様書 3.8.1）。例: 「ゲーム 中古 クーリエ」→ <code>Template_ゲーム_used_xp</code>。C 列も貼った場合は、その値を優先し、B 列から作った値と違えば注意を出します。変換できない行は「⚠️ 変換失敗」と理由を出します。</p>
   <textarea id="tplPaste" rows="4"></textarea>
   <p><button class="btn" id="btnTplApply">取り込む</button> <button class="btn ghost" id="btnPolReset">ポリシー・テンプレートを見本に戻す</button></p>
   <div id="tplMsg"></div>
@@ -1080,19 +1080,61 @@ footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13p
     });
     return list;
   }
-  // Import_Templates の A〜C の貼り付け。式が読むのは 2〜50 行目（49 行）（4.13）
+  // テンプレート名の変換（Import_Templates の B 列＝日本語名 → C 列＝標準名）。
+  // コード_Part4_テンプレート・ポリシー関連.gs の generateStandardTemplateName（P4:1463-1513）と同じ手順・同じ正規表現。
+  // 戻り値: { name: '標準名' | null, reason: '' | 'empty' | 'shipping' | 'condition' }（失敗の理由つき。.gs は null を返すだけ）
+  const RE_ECO = /エコノミー|[Ee]conomy|小形包装物|[Ss]mall.*[Pp]acket/;
+  const RE_XP = /クーリエ|クリエ|XP|速達|[Ee]xpress/;
+  const RE_NEW = /新品|[Nn]ew/;
+  const RE_USED = /中古|[Uu]sed/;
+  const g = (re) => new RegExp(re.source, 'g');
+  function standardTemplateName(japaneseName) {
+    const name = String(japaneseName === undefined || japaneseName === null || japaneseName === false || japaneseName === 0 ? '' : japaneseName).trim();
+    if (!name) return { name: null, reason: 'empty' };
+    let shipping = null, rest = name;
+    if (RE_ECO.test(name)) { shipping = 'eco'; rest = name.replace(g(RE_ECO), '').trim(); }
+    else if (RE_XP.test(name)) { shipping = 'xp'; rest = name.replace(g(RE_XP), '').trim(); }
+    if (!shipping) return { name: null, reason: 'shipping' };
+    let condition = null, tpl = rest;
+    if (RE_NEW.test(rest)) { condition = 'new'; tpl = rest.replace(g(RE_NEW), '').trim(); }
+    else if (RE_USED.test(rest)) { condition = 'used'; tpl = rest.replace(g(RE_USED), '').trim(); }
+    else return { name: null, reason: 'condition' };
+    if (!tpl) tpl = '一般汎用';
+    return { name: 'Template_' + tpl + '_' + condition + '_' + shipping, reason: '' };
+  }
+  const TEMPLATE_FAIL_TEXT = { empty: '名前が空です', shipping: '配送タイプが見つかりません（エコノミー／Economy／小形包装物／Small Packet、または クーリエ／クリエ／XP／速達／Express のどれかが必要）', condition: '商品状態が見つかりません（新品／New／中古／Used のどれかが必要）' };
+  // Import_Templates の A〜C の貼り付け。式が読むのは 2〜50 行目（49 行）（4.13）。
+  // B 列（日本語名）があれば標準名を作る（3.8.1）。C 列（標準名）も貼ってあれば、その値を優先し、B から作った値と違えば注意を出す。
+  // 2 列だけで 2 列目が Template_ で始まるときは、従来どおり「ID と標準名」として読む。
   function parseTemplates(text) {
     const parsed = parseDelimited(text);
-    let rows = parsed.rows.filter((r) => !isBlankRow(r));
-    const res = { rows: [], notes: [] };
-    if (rows.length && num0(rows[0][0]) === null && nfkc(trimAll(rows[0][0])) !== '') rows = rows.slice(1);
+    // 貼った表の実際の行番号（空行も数える）を持たせる
+    let rows = parsed.rows.map((r, i) => ({ r, line: i + 1 })).filter((x) => !isBlankRow(x.r));
+    const res = { rows: [], notes: [], detail: [] };
+    if (rows.length && num0(rows[0].r[0]) === null && nfkc(trimAll(rows[0].r[0])) !== '' && !/[（(]例[）)]/.test(rows[0].r[0])) rows = rows.slice(1);   // 見出し行（例の行は見出しではない）
     if (rows.length > 49) { res.notes.push('式が読むのは Import_Templates の 2〜50 行目（49 行）までなので、先頭の 49 行だけ使います（4.13）。'); rows = rows.slice(0, 49); }
-    rows.forEach((r) => {
-      const a = trimAll(r[0] === undefined ? '' : r[0]);
-      const c = trimAll((r.length >= 3 ? r[2] : r[1]) === undefined ? '' : (r.length >= 3 ? r[2] : r[1]));
-      if (a === '' || c === '' || c.indexOf('⚠') !== -1) return;
+    rows.forEach((rw) => {
+      const r = rw.r, line = rw.line;
+      const get = (k) => trimAll(r[k] === undefined ? '' : r[k]);
+      const a = get(0);
+      let b = get(1), c = get(2);
+      const legacy = r.length < 3 && /^Template_/.test(b);   // 2 列だけで 2 列目が標準名: 従来どおり「ID と標準名」として読む（B 列が無い貼り付け）
+      if (legacy) { c = b; b = ''; }
+      if (a.indexOf('（例）') !== -1 || a.indexOf('(例)') !== -1) { res.detail.push({ line, A: a, B: b, C: c, status: 'example', built: '', used: '', reason: '例の行は読み飛ばしました' }); return; }
+      // シートの検証（EG:1937-1940 など）は「ID か日本語名（B 列）が空」の行を「データ不足」として外す。C 列に値があっても外れる
+      if (a === '' || (b === '' && !legacy)) { res.detail.push({ line, A: a, B: b, C: c, status: 'lack', built: '', used: '', reason: (a === '' ? 'ID（A 列）' : '日本語名（B 列）') + 'が空のため、シートの検証では「⚠️ データ不足」（または「ID/名前が空」）として外れます。' + (c !== '' && c.indexOf('⚠') !== 0 ? 'C 列に値があっても使われません。この行は読み込みません。' : 'この行は読み込みません。') }); return; }
       const n = num0(a);
-      res.rows.push({ A: n !== null ? n : a, C: c });
+      const id = n !== null ? n : a;
+      let built = null, why = '';
+      if (b !== '') { const bt = standardTemplateName(b); built = bt.name; why = bt.reason; }
+      const given = c !== '' && c.indexOf('⚠') !== 0 ? c : '';
+      const used = given || built || '';
+      const d = { line, A: a, B: b, C: c, built: built || '', status: 'ok', used, reason: legacy ? 'ID と標準名だけの貼り付けとして読みました（シートでは B 列が空の行は外れます）。' : '' };
+      if (!used) { d.status = 'fail'; d.reason = '⚠️ 変換失敗: ' + TEMPLATE_FAIL_TEXT[why || 'empty']; }
+      else if (given && built && given !== built) { d.status = 'differ'; d.reason = 'C 列の値「' + given + '」と、B 列から作った値「' + built + '」が違います。C 列の値を使います（シートの式は C 列を見ます）。ただし、シートでインポート用の検証を実行すると、C 列は B 列から作り直されます。'; }
+      else if (given && b !== '' && !built) { d.status = 'differ'; d.reason = 'B 列「' + b + '」は変換できません（' + TEMPLATE_FAIL_TEXT[why] + '）。貼り付けた C 列の値を使います（シートでインポート用の検証を実行すると、C 列は B 列から作り直され、変換できなければ「⚠️ 変換失敗」になります）。'; }
+      res.detail.push(d);
+      if (used) res.rows.push({ A: id, C: used });
     });
     return res;
   }
@@ -1233,11 +1275,11 @@ footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13p
       else if (!/^[A-Za-z0-9]+$/.test(t.F)) add('warn', i, 'F', 'SKU略称「' + t.F + '」は半角英数字だけではありません。警告が出て、このタグの行には SKU が書かれません。', '3.3・4.16（U:2021-2037）');
       else if (/\d$/.test(t.F)) add('warn', i, 'F', 'SKU略称「' + t.F + '」の末尾が数字です。既存 SKU を読む正規表現の切れ目（日付との境）の解釈が揺れ得ます【未確認】。', '4.16・9.3 #6');
       // --- テンプレート
-      if (t.G === '') add('warn', i, 'G', 'テンプレート名が空欄です。テンプレートID（E）が空になります。', '4.13・7章 #3');
+      if (t.G === '') add('warn', i, 'G', 'テンプレート名が空欄です。テンプレートID（E）が空になります（出品テンプレート名の判定の文言を取り除いた残りを書きます。例: 「ゲーム 中古 クーリエ」なら ゲーム）。', '4.13・7章 #3');
       else if (t.G !== trimAll(t.G)) add('warn', i, 'G', 'テンプレート名「' + t.G + '」の前後に空白があります。シートは Template_<名>_… の標準名と完全一致で探すので、一致せず、テンプレートID（E）は「該当なし」になります。', '4.13（式は Import_Templates の標準名と完全一致）');
       else {
         const anyG = tplC.some((c) => c.indexOf(('Template_' + t.G + '_').toLowerCase()) === 0);
-        if (!anyG) add('warn', i, 'G', 'テンプレート名「' + t.G + '」が (D) のテンプレート一覧（標準名 Template_' + t.G + '_new|used_eco|xp）にありません。テンプレートID（E）は「該当なし」になります。', '4.13（式は Import_Templates の標準名と完全一致）');
+        if (!anyG) add('warn', i, 'G', 'テンプレート名「' + t.G + '」が (D) のテンプレート一覧（標準名 Template_' + t.G + '_new|used_eco|xp）にありません。テンプレートID（E）は「該当なし」になります。ここには、出品テンプレート名から「中古／新品」と「エコノミー／クーリエ」などの判定の文言を取り除いた残りの名前を書きます（例: 「ゲーム 中古 クーリエ」なら ゲーム）。', '4.13（式は Import_Templates の標準名と完全一致）');
         else {
           const conds = [AEv === '新品' ? 'new' : 'used'];
           const types = Array.from(new Set(methods.map((m) => ((m === 'EP' || m === 'CE') ? 'eco' : 'xp'))));
@@ -1703,7 +1745,7 @@ footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13p
     nfkc, trimAll, parseDelimited, toDelimited,
     TAG_COLS, TAG_KEYS, STORED_KEYS, CATEGORIES, CHOICES, RATE_RANGE, emptyTag, derivedO, cleanCell, suggestCell, parseTagPaste, tagsToTable, sampleTags,
     SETTING_DEFS, SETTING_KEYS, defaultSettings, settingsToJson, settingsFromJson, checkSettings, parseProfitAmounts,
-    parseImportPolicies, parsePolicyMaster, parseTemplates, bandTable, policyNameOf, templateNameOf,
+    parseImportPolicies, parsePolicyMaster, parseTemplates, standardTemplateName, TEMPLATE_FAIL_TEXT, bandTable, policyNameOf, templateNameOf,
     tagMap, buildCtx, parseCost, calcRow, validateTags, countIssues, parseBatch, batchCompute, V5_COLS, parseSheetDate, parseV5Import, EAGLE_HEADS, EAGLE_MAP, eagleExport, show, outcomeNotes, buildSteps,
     COMPARE_COLS, COL_NAME, parseColumnHeads, readSheetCell, compareCell, reconcile, reconcileToTable, sheetPasteFromCalc,
   };
@@ -2408,7 +2450,10 @@ footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13p
     });
     if (sel === 'all' || sel === 'manual') h += '<h4>手動用・固定のポリシー（帯なし。DDP・免除の行が名前の末尾で探します） ' + bt.manual.length + ' 本</h4><div class="tbl-wrap"><table><thead><tr><th>ポリシー名</th><th>ID</th></tr></thead><tbody>' + bt.manual.map((r) => '<tr><td>' + esc(r[1]) + '</td><td class="num">' + r[0] + '</td></tr>').join('') + '</tbody></table></div>';
     $('bands').innerHTML = h;
-    $('tplTable').innerHTML = '<div class="tbl-wrap"><table><thead><tr><th>ID（A）</th><th>標準名（C）</th></tr></thead><tbody>' + state.templates.map((t) => '<tr><td class="num">' + esc(t.A) + '</td><td>' + esc(t.C) + '</td></tr>').join('') + '</tbody></table></div>';
+    if (state.templateMode === 'pasted' && state.templateDetail && state.templateDetail.length) {
+      const lab = { ok: '', differ: '注意', fail: '⚠️ 変換失敗', lack: '読み飛ばし', example: '例の行' };
+      $('tplTable').innerHTML = '<p class="muted">標準名は、貼り付けた C 列があればそれを、無ければ B 列（日本語名）から作ります（仕様書 3.8.1）。</p><div class="tbl-wrap"><table><thead><tr><th>行</th><th>ID（A）</th><th>日本語名（B）</th><th>貼り付けた C 列</th><th>使う標準名</th><th>状態・理由</th></tr></thead><tbody>' + state.templateDetail.map((d) => '<tr class="' + (d.status === 'fail' ? 'row-err' : (d.status === 'ok' ? '' : 'row-warn')) + '"><td class="num">' + d.line + '</td><td class="num">' + esc(d.A) + '</td><td>' + esc(d.B) + '</td><td>' + esc(d.C) + '</td><td>' + esc(d.used) + '</td><td class="wide">' + esc(lab[d.status]) + ' ' + esc(d.reason) + '</td></tr>').join('') + '</tbody></table></div>';
+    } else $('tplTable').innerHTML = '<div class="tbl-wrap"><table><thead><tr><th>ID（A）</th><th>標準名（C）</th></tr></thead><tbody>' + state.templates.map((t) => '<tr><td class="num">' + esc(t.A) + '</td><td>' + esc(t.C) + '</td></tr>').join('') + '</tbody></table></div>';
   }
   $('bandSel').addEventListener('change', renderPolicies);
   $('btnPolApply').addEventListener('click', () => {
@@ -2431,12 +2476,16 @@ footer{padding:20px 0 50px;text-align:center;color:var(--ink-soft);font-size:13p
   $('btnTplApply').addEventListener('click', () => {
     const r = L.parseTemplates($('tplPaste').value);
     let h = r.notes.length ? msgBox('note', r.notes.map(esc).join(' ')) : '';
-    if (r.rows.length) { state.templates = r.rows; state.templateMode = 'pasted'; h += msgBox('ok', 'テンプレート一覧を ' + r.rows.length + ' 件取り込みました。'); } else h += msgBox('err', '取り込める行がありません。');
+    state.templateDetail = r.detail;
+    const nf = r.detail.filter((d) => d.status === 'fail').length, nd = r.detail.filter((d) => d.status === 'differ').length;
+    if (r.rows.length) { state.templates = r.rows; state.templateMode = 'pasted'; h += msgBox('ok', 'テンプレート一覧を ' + r.rows.length + ' 件取り込みました。B 列（日本語名）だけの行は標準名を作りました。'); } else h += msgBox('err', '取り込める行がありません。');
+    if (nf) h += msgBox('err', '⚠️ 変換失敗 ' + nf + ' 行（下の表に理由があります）。この行はテンプレートID を探す対象になりません。');
+    if (nd) h += msgBox('warn', 'C 列と、B 列から作った標準名が違う行が ' + nd + ' 行あります（下の表）。');
     $('tplMsg').innerHTML = h; renderPolicies(); renderIssues();
   });
   $('btnPolReset').addEventListener('click', () => {
     state.importPolicies = E.buildImportPolicies(samplePolicies()); state.policyMasterB = samplePolicies().map((p) => ({ id: p.id, name: p.name })); state.policyMode = 'sample';
-    state.templates = E.IMPORT_TEMPLATES.map((t) => ({ A: t.A, C: t.C })); state.templateMode = 'sample';
+    state.templates = E.IMPORT_TEMPLATES.map((t) => ({ A: t.A, C: t.C })); state.templateMode = 'sample'; state.templateDetail = null;
     $('polMsg').innerHTML = ''; $('pmMsg').innerHTML = ''; $('tplMsg').innerHTML = ''; renderPolicies(); renderIssues();
   });
 
